@@ -21,3 +21,20 @@ typedef struct {
 } LOCONET_RX_RINGBUFFER_Type;
 
 static LOCONET_RX_RINGBUFFER_Type loconet_rx_ringbuffer = { { 0 }, 0, 0};
+
+void loconet_rx_ringbuffer_push(uint8_t byte);
+void loconet_rx_ringbuffer_push(uint8_t byte)
+{
+  // Get index + 1 of buffer head
+  uint8_t index = (loconet_rx_ringbuffer.writer + 1) % LOCONET_RX_RINGBUFFER_Size;
+
+  // If the buffer is full, wait until the reader empties
+  // a slot in the buffer to write to.
+  while (index == loconet_rx_ringbuffer.reader) {
+    continue;
+  }
+
+  // Write the byte
+  loconet_rx_ringbuffer.buffer[loconet_rx_ringbuffer.writer] = byte;
+  loconet_rx_ringbuffer.writer = index;
+}
