@@ -104,6 +104,16 @@ uint8_t process_loconet_rx_ringbuffer(void)
     return 0;
   }
 
+  // Get bytes for passing (and build checksum)
+  uint8_t data[message_size - 2];
+  uint8_t start = reader + 1;
+  uint8_t checksum = opcode.byte;
+
+  for (uint8_t index = 0; index < message_size - 2; index++) {
+    data[index] = buffer[(start + index) % LOCONET_RX_RINGBUFFER_Size];
+    checksum ^= data[index];
+  }
+
   // Return that we have processed a message
   return 1;
 }
