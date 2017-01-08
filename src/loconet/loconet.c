@@ -82,6 +82,28 @@ uint8_t process_loconet_rx_ringbuffer(void)
     return 0;
   }
 
+  // New message
+  uint8_t message_size = 0;
+  switch (opcode.bits.OPCODE) {
+    case 0x04:
+      message_size = 2;
+      break;
+    case 0x05:
+      message_size = 4;
+      break;
+    case 0x06:
+      message_size = 6;
+      break;
+    case 0x07:
+      message_size = buffer[(reader + 1) % LOCONET_RX_RINGBUFFER_Size];
+      break;
+  }
+
+  // Check if we have all the bytes for this message
+  if (writer <= reader + message_size) {
+    return 0;
+  }
+
   // Return that we have processed a message
   return 1;
 }
