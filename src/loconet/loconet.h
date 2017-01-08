@@ -27,6 +27,13 @@
  * Before you can use the logger functions, initialize the logger
  * using `logger_init(baudrate);`.
  *
+ * To process incoming messages from loconet, place
+ * `process_loconet_rx_ringbuffer` in your main loop, e.g.:
+ *
+ *   while (1) {
+ *     process_loconet_rx_ringbuffer();
+ *   }
+ *
  * @author Ferdi van der Werf <ferdi@slashdev.nl>
  */
 
@@ -122,5 +129,9 @@ extern void loconet_rx_ringbuffer_push(uint8_t byte);
       /* TODO: Handle TX complete */ \
     } \
   } \
+
+//-----------------------------------------------------------------------------
+// Process the loconet rx ringbuffer.
+extern uint8_t process_loconet_rx_ringbuffer(void);
 
 #endif // _LOCONET_LOCONET_H_
