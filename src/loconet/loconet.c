@@ -338,10 +338,9 @@ uint8_t process_loconet_rx_ringbuffer(void)
     checksum ^= data[index];
   }
 
-  // Verify checksum
+  // Verify checksum (skip message if failed)
   checksum ^= buffer[(start + message_size - 2) % LOCONET_RX_RINGBUFFER_Size];
   if (checksum != 0xFF) {
-    // Advance reader
     loconet_rx_ringbuffer.reader = (reader + message_size) % LOCONET_RX_RINGBUFFER_Size;
     return 0;
   }
