@@ -57,6 +57,7 @@ extern void loconet_rx_ringbuffer_push(uint8_t byte);
     /* Set Tx pin as output */ \
     HAL_GPIO_LOCONET_TX_out(); \
     HAL_GPIO_LOCONET_TX_pmuxen(PORT_PMUX_PMUXE_C_Val); \
+    HAL_GPIO_LOCONET_TX_clr(); \
     /* Set Rx pin as input */ \
     HAL_GPIO_LOCONET_RX_in(); \
     HAL_GPIO_LOCONET_RX_pmuxen(PORT_PMUX_PMUXE_C_Val); \
@@ -87,7 +88,7 @@ extern void loconet_rx_ringbuffer_push(uint8_t byte);
     \
     /* CTRLB register:
      *   RXEN:      0x01  Enable Rx
-     *   TXEN:      0x01  Enable Tx
+     *   TXEN:      0x00  Only enable Tx when sending
      *   PMODE:     0x00  Ignored, parity is not used
      *   SFDE:      0x00  Ignored, chip does not go into standby
      *   SBMODE:    0x00  One stop bit
@@ -95,7 +96,6 @@ extern void loconet_rx_ringbuffer_push(uint8_t byte);
      */ \
     SERCOM##sercom->USART.CTRLB.reg = \
       SERCOM_USART_CTRLB_RXEN | \
-      SERCOM_USART_CTRLB_TXEN | \
       SERCOM_USART_CTRLB_CHSIZE(0); \
     \
     uint64_t br = (uint64_t)65536 * (F_CPU - 16 * 16666) / F_CPU; \
