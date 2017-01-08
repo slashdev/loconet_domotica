@@ -13,4 +13,7 @@
 
 #ifndef _LOCONET_LOCONET_H_
 #define _LOCONET_LOCONET_H_
+
+#include <stdint.h>
+
 #endif // _LOCONET_LOCONET_H_
