@@ -76,6 +76,12 @@ uint8_t process_loconet_rx_ringbuffer(void)
     return 0;
   }
 
+  // If it's not an OPCODE byte, skip it
+  if (!(opcode.byte & LOCONET_OPCODE_FLAG)) {
+    loconet_rx_ringbuffer.reader = (reader + 1) % LOCONET_RX_RINGBUFFER_Size;
+    return 0;
+  }
+
   // Return that we have processed a message
   return 1;
 }
