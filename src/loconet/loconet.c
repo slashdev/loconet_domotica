@@ -71,6 +71,11 @@ uint8_t process_loconet_rx_ringbuffer(void)
     writer += LOCONET_RX_RINGBUFFER_Size;
   }
 
+  if (writer <= reader + 1) {
+    // We want at least two bytes before we try to read the message
+    return 0;
+  }
+
   // Return that we have processed a message
   return 1;
 }
