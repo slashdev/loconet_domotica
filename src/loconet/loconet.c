@@ -41,6 +41,26 @@ void loconet_rx_ringbuffer_push(uint8_t byte)
 }
 
 //-----------------------------------------------------------------------------
+void ln_handler_dummy_0(void);
+void ln_handler_dummy_2(uint8_t, uint8_t);
+void ln_handler_dummy_4(uint8_t, uint8_t, uint8_t, uint8_t);
+void ln_handler_dummy_n(uint8_t*, uint8_t);
+
+//-----------------------------------------------------------------------------
+#define LN_DUMMY_0(name) \
+  __attribute__ ((weak, alias ("ln_handler_dummy_0"))) \
+  void ln_handler_##name(void)
+#define LN_DUMMY_2(name) \
+  __attribute__ ((weak, alias ("ln_handler_dummy_2"))) \
+  void ln_handler_##name(uint8_t, uint8_t)
+#define LN_DUMMY_4(name) \
+  __attribute__ ((weak, alias ("ln_handler_dummy_4"))) \
+  void ln_handler_##name(uint8_t, uint8_t, uint8_t, uint8_t)
+#define LN_DUMMY_N(name) \
+  __attribute__ ((weak, alias ("ln_handler_dummy_n"))) \
+  void ln_handler_##name(uint8_t*, uint8_t)
+
+//-----------------------------------------------------------------------------
 typedef union {
   struct {
     uint8_t NUMBER:5;
@@ -124,4 +144,30 @@ uint8_t process_loconet_rx_ringbuffer(void)
 
   // Return that we have processed a message
   return 1;
+}
+
+//-----------------------------------------------------------------------------
+// Dummy handlers
+void ln_handler_dummy_0(void)
+{
+}
+
+void ln_handler_dummy_2(uint8_t a, uint8_t b)
+{
+  (void)a;
+  (void)b;
+}
+
+void ln_handler_dummy_4(uint8_t a, uint8_t b, uint8_t c, uint8_t d)
+{
+  (void)a;
+  (void)b;
+  (void)c;
+  (void)d;
+}
+
+void ln_handler_dummy_n(uint8_t *d, uint8_t l)
+{
+  (void)d;
+  (void)l;
 }
