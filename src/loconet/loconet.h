@@ -96,6 +96,7 @@ extern void loconet_rx_ringbuffer_push(uint8_t byte);
      */ \
     SERCOM##sercom->USART.CTRLB.reg = \
       SERCOM_USART_CTRLB_RXEN | \
+      SERCOM_USART_CTRLB_TXEN | \
       SERCOM_USART_CTRLB_CHSIZE(0); \
     \
     uint64_t br = (uint64_t)65536 * (F_CPU - 16 * 16666) / F_CPU; \
