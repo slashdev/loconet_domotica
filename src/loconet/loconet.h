@@ -21,6 +21,7 @@
  * - fl_pin:  the PIN of the FLANK detection (e.g. 13)
  * - fl_int:  the external interrupt associated to fl_pin
  *     (e.g. 1, see datasheet)
+ * - fl_tmr:  the TIMER used for Carrier and Break detection
  *
  * Loconet uses CSMA/CD techniques to arbitrage and control network
  * access. The bit times are 60 uSecs or 16.66 KBaud +/- 1.5%. This
@@ -65,12 +66,19 @@
 #include "samd20.h"
 
 //-----------------------------------------------------------------------------
+// Give a warning if F_CPU is not 8MHz
+#if F_CPU != 8000000
+#warn "F_CPU is not 8000000, CD and BREAK timer wont work as expected!"
+#endif
+
+//-----------------------------------------------------------------------------
 extern void loconet_init(void);
 extern void loconet_rx_ringbuffer_push(uint8_t byte);
+extern void loconet_start_timer_delay(uint16_t delay_us);
 extern void loconet_handle_eic(void);
 
 // Marco for loconet_init and irq_handler_sercom<nr>
-#define LOCONET_BUILD(sercom, tx_port, tx_pin, rx_port, rx_pin, rx_pad, fl_port, fl_pin, fl_int) \
+#define LOCONET_BUILD(sercom, tx_port, tx_pin, rx_port, rx_pin, rx_pad, fl_port, fl_pin, fl_int, fl_tmr) \
   HAL_GPIO_PIN(LOCONET_TX, tx_port, tx_pin); \
   HAL_GPIO_PIN(LOCONET_RX, rx_port, rx_pin); \
   HAL_GPIO_PIN(LOCONET_FL, fl_port, fl_pin); \
@@ -156,6 +164,40 @@ extern void loconet_handle_eic(void);
     NVIC_EnableIRQ(EIC_IRQn);                                                 \
     /* Enable external interrupts */                                          \
     EIC->CTRL.reg |= EIC_CTRL_ENABLE;                                         \
+                                                                              \
+    /* Enable clock for flank timer, without prescaler */                     \
+    PM->APBCMASK.reg |= PM_APBCMASK_TC##fl_tmr;                               \
+    GCLK->CLKCTRL.reg =                                                       \
+      GCLK_CLKCTRL_ID(TC##fl_tmr##_GCLK_ID)                                   \
+      | GCLK_CLKCTRL_CLKEN                                                    \
+      | GCLK_CLKCTRL_GEN(0);                                                  \
+                                                                              \
+    /* CTRLA register:
+     *   PRESCSYNC: 0x02  RESYNC
+     *   RUNSTDBY:        Ignored
+     *   PRESCALER: 0x03  DIV8, each tick will be 1us
+     *   WAVEGEN:   0x01  MFRQ, zero counter on match
+     *   MODE:      0x00  16 bits timer
+     */                                                                       \
+    TC##fl_tmr->COUNT16.CTRLA.reg =                                           \
+      TC_CTRLA_PRESCSYNC_RESYNC                                               \
+      | TC_CTRLA_PRESCALER_DIV8                                               \
+      | TC_CTRLA_WAVEGEN_MFRQ                                                 \
+      | TC_CTRLA_MODE_COUNT16;                                                \
+                                                                              \
+    /* INTERRUPTS:
+     *   Interrupt on match
+     */                                                                       \
+    TC##fl_tmr->COUNT16.INTENSET.reg = TC_INTENSET_MC(1);                     \
+    NVIC_EnableIRQ(TC##fl_tmr##_IRQn);                                        \
+  }                                                                           \
+  void loconet_start_timer_delay(uint16_t delay_us) {                         \
+    /* Set timer counter to 0 */                                              \
+    TC##fl_tmr->COUNT16.COUNT.reg = 0;                                        \
+    /* Set timer match, 1200us */                                             \
+    TC##fl_tmr->COUNT16.CC[0].reg = delay_us;                                 \
+    /* Enable timer */                                                        \
+    TC##fl_tmr->COUNT16.CTRLA.reg |= TC_CTRLA_ENABLE;                         \
   }                                                                           \
   void loconet_handle_eic(void) {                                             \
     /* Return if it's not our external pin to watch */                        \
@@ -164,6 +206,14 @@ extern void loconet_handle_eic(void);
     }                                                                         \
     /* Reset flag */                                                          \
     EIC->INTFLAG.reg |= EIC_INTFLAG_EXTINT##fl_int;                           \
+  }                                                                           \
+  /* Handle timer interrupt */                                                \
+  void irq_handler_tc##fl_tmr(void);                                          \
+  void irq_handler_tc##fl_tmr(void) {                                         \
+    /* Disable timer */                                                       \
+    TC##fl_tmr->COUNT16.CTRLA.bit.ENABLE = 0;                                 \
+    /* Reset clock interrupt flag */                                          \
+    TC##fl_tmr->COUNT16.INTFLAG.reg = TC_INTFLAG_MC(1);                       \
   }                                                                           \
   /* Handle received bytes */ \
   void irq_handler_sercom##sercom(void); \
