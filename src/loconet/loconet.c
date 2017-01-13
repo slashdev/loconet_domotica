@@ -41,6 +41,18 @@ void loconet_rx_ringbuffer_push(uint8_t byte)
 }
 
 //-----------------------------------------------------------------------------
+void loconet_irq_flank_rise(void) {
+}
+
+//-----------------------------------------------------------------------------
+void loconet_irq_flank_fall(void) {
+}
+
+//-----------------------------------------------------------------------------
+void loconet_irq_timer(void) {
+}
+
+//-----------------------------------------------------------------------------
 void ln_handler_dummy_0(void);
 void ln_handler_dummy_2(uint8_t, uint8_t);
 void ln_handler_dummy_4(uint8_t, uint8_t, uint8_t, uint8_t);

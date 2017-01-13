@@ -204,6 +204,12 @@ extern void loconet_handle_eic(void);
     if (!EIC->INTFLAG.bit.EXTINT##fl_int) {                                   \
       return;                                                                 \
     }                                                                         \
+    /* Determine RISE / FALL */                                               \
+    if (HAL_GPIO_LOCONET_FL_read()) {                                         \
+      loconet_irq_flank_rise();                                               \
+    } else {                                                                  \
+      loconet_irq_flank_fall();                                               \
+    }                                                                         \
     /* Reset flag */                                                          \
     EIC->INTFLAG.reg |= EIC_INTFLAG_EXTINT##fl_int;                           \
   }                                                                           \
@@ -214,6 +220,8 @@ extern void loconet_handle_eic(void);
     TC##fl_tmr->COUNT16.CTRLA.bit.ENABLE = 0;                                 \
     /* Reset clock interrupt flag */                                          \
     TC##fl_tmr->COUNT16.INTFLAG.reg = TC_INTFLAG_MC(1);                       \
+    /* Handle loconet timer */                                                \
+    loconet_irq_timer();                                                      \
   }                                                                           \
   /* Handle received bytes */ \
   void irq_handler_sercom##sercom(void); \
@@ -230,6 +238,15 @@ extern void loconet_handle_eic(void);
       /* TODO: Handle TX complete */ \
     } \
   } \
+
+//-----------------------------------------------------------------------------
+// IRQ for flank rise / fall
+extern void loconet_irq_flank_rise(void);
+extern void loconet_irq_flank_fall(void);
+
+//-----------------------------------------------------------------------------
+// IRQ for timeout of timer
+extern void loconet_irq_timer(void);
 
 //-----------------------------------------------------------------------------
 // Process the loconet rx ringbuffer.
