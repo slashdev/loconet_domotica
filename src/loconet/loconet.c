@@ -23,6 +23,22 @@ Tc *loconet_flank_timer;
 LOCONET_CONFIG_Type loconet_config = { 0 };
 
 //-----------------------------------------------------------------------------
+// Loconet message/linked list definition
+typedef struct MESSAGE {
+  // Control fields
+  uint8_t priority;
+  struct MESSAGE *next;
+  // Message fields
+  uint8_t *data;
+  uint8_t data_length;
+  // Current index we're sending
+  uint8_t tx_index;
+} LOCONET_MESSAGE_Type;
+
+static LOCONET_MESSAGE_Type *loconet_tx_queue = 0;
+static LOCONET_MESSAGE_Type *loconet_tx_current = 0;
+
+//-----------------------------------------------------------------------------
 // Initialize USART for loconet
 void loconet_init_usart(Sercom *sercom, uint32_t pm_mask, uint32_t gclock_id, uint8_t rx_pad, uint32_t nvic_irqn)
 {
