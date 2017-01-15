@@ -87,7 +87,6 @@ extern void loconet_irq_timer(void);
 // IRQ for sercom
 extern void loconet_irq_sercom(void);
 
-extern void loconet_rx_ringbuffer_push(uint8_t byte);
 extern void loconet_handle_eic(void);
 
 // Macro for loconet_init and irq_handler_sercom<nr>

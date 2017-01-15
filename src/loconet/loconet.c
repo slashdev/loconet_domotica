@@ -10,6 +10,10 @@
 #include "loconet.h"
 
 //-----------------------------------------------------------------------------
+// Prototypes
+void loconet_rx_ringbuffer_push(uint8_t byte);
+
+//-----------------------------------------------------------------------------
 // Peripherals to use for communication
 Sercom *loconet_sercom;
 Tc *loconet_flank_timer;
