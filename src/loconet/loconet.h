@@ -75,6 +75,8 @@
 // Initializations
 extern void loconet_init(void);
 extern void loconet_init_usart(Sercom*, uint32_t, uint32_t, uint8_t, uint32_t);
+extern void loconet_init_flank_detection(uint8_t);
+extern void loconet_init_flank_timer(Tc*, uint32_t, uint32_t, uint32_t);
 
 //-----------------------------------------------------------------------------
 // IRQs for flank rise / fall
@@ -89,7 +91,7 @@ extern void loconet_rx_ringbuffer_push(uint8_t byte);
 extern void loconet_start_timer_delay(uint16_t delay_us);
 extern void loconet_handle_eic(void);
 
-// Marco for loconet_init and irq_handler_sercom<nr>
+// Macro for loconet_init and irq_handler_sercom<nr>
 #define LOCONET_BUILD(sercom, tx_port, tx_pin, rx_port, rx_pin, rx_pad, fl_port, fl_pin, fl_int, fl_tmr) \
   HAL_GPIO_PIN(LOCONET_TX, tx_port, tx_pin);                                  \
   HAL_GPIO_PIN(LOCONET_RX, rx_port, rx_pin);                                  \
@@ -108,7 +110,7 @@ extern void loconet_handle_eic(void);
     HAL_GPIO_LOCONET_FL_in();                                                 \
     HAL_GPIO_LOCONET_FL_pullup();                                             \
     HAL_GPIO_LOCONET_FL_pmuxen(PORT_PMUX_PMUXE_A_Val);                        \
-    /* Set loconet_sercom */                                                  \
+    /* Initialize usart */                                                    \
     loconet_init_usart(                                                       \
       SERCOM##sercom,                                                         \
       PM_APBCMASK_SERCOM##sercom,                                             \
@@ -116,46 +118,17 @@ extern void loconet_handle_eic(void);
       rx_pad,                                                                 \
       SERCOM##sercom##_IRQn                                                   \
     );                                                                        \
-                                                                              \
-    /* Flank detection */                                                     \
-    /* Enable clock for external interrupts, without prescaler */             \
-    PM->APBAMASK.reg |= PM_APBAMASK_EIC;                                      \
-    GCLK->CLKCTRL.reg =                                                       \
-      GCLK_CLKCTRL_ID(GCLK_CLKCTRL_ID_EIC)                                    \
-      | GCLK_CLKCTRL_CLKEN                                                    \
-      | GCLK_CLKCTRL_GEN(0);                                                  \
-    /* Enable interrupt for external pin */                                   \
-    EIC->INTENSET.reg |= EIC_INTENSET_EXTINT##fl_int;                         \
-    EIC->CONFIG[fl_int / 8].reg = EIC_CONFIG_SENSE0_BOTH << 4 * (fl_int % 8); \
-    NVIC_EnableIRQ(EIC_IRQn);                                                 \
-    /* Enable external interrupts */                                          \
-    EIC->CTRL.reg |= EIC_CTRL_ENABLE;                                         \
-                                                                              \
-    /* Enable clock for flank timer, without prescaler */                     \
-    PM->APBCMASK.reg |= PM_APBCMASK_TC##fl_tmr;                               \
-    GCLK->CLKCTRL.reg =                                                       \
-      GCLK_CLKCTRL_ID(TC##fl_tmr##_GCLK_ID)                                   \
-      | GCLK_CLKCTRL_CLKEN                                                    \
-      | GCLK_CLKCTRL_GEN(0);                                                  \
-                                                                              \
-    /* CTRLA register:
-     *   PRESCSYNC: 0x02  RESYNC
-     *   RUNSTDBY:        Ignored
-     *   PRESCALER: 0x03  DIV8, each tick will be 1us
-     *   WAVEGEN:   0x01  MFRQ, zero counter on match
-     *   MODE:      0x00  16 bits timer
-     */                                                                       \
-    TC##fl_tmr->COUNT16.CTRLA.reg =                                           \
-      TC_CTRLA_PRESCSYNC_RESYNC                                               \
-      | TC_CTRLA_PRESCALER_DIV8                                               \
-      | TC_CTRLA_WAVEGEN_MFRQ                                                 \
-      | TC_CTRLA_MODE_COUNT16;                                                \
-                                                                              \
-    /* INTERRUPTS:
-     *   Interrupt on match
-     */                                                                       \
-    TC##fl_tmr->COUNT16.INTENSET.reg = TC_INTENSET_MC(1);                     \
-    NVIC_EnableIRQ(TC##fl_tmr##_IRQn);                                        \
+    /* Initialize flank detection */                                          \
+    loconet_init_flank_detection(                                             \
+      fl_int                                                                  \
+    );                                                                        \
+    /* Initialize flank timer */                                              \
+    loconet_init_flank_timer(                                                 \
+      TC##fl_tmr,                                                             \
+      PM_APBCMASK_TC##fl_tmr,                                                 \
+      TC##fl_tmr##_GCLK_ID,                                                   \
+      TC##fl_tmr##_IRQn                                                       \
+    );                                                                        \
   }                                                                           \
   void loconet_start_timer_delay(uint16_t delay_us) {                         \
     /* Set timer counter to 0 */                                              \

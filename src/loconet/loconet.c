@@ -12,6 +12,7 @@
 //-----------------------------------------------------------------------------
 // Peripherals to use for communication
 Sercom *loconet_sercom;
+Tc *loconet_flank_timer;
 
 //-----------------------------------------------------------------------------
 // Initialize USART for loconet
@@ -74,6 +75,60 @@ void loconet_init_usart(Sercom *sercom, uint32_t pm_mask, uint32_t gclock_id, ui
 
   // Enable USART
   loconet_sercom->USART.CTRLA.reg |= SERCOM_USART_CTRLA_ENABLE;
+}
+
+//-----------------------------------------------------------------------------
+// Initialize flank detection
+void loconet_init_flank_detection(uint8_t fl_int)
+{
+  // Enable clock for external interrupts, without prescaler
+  PM->APBAMASK.reg |= PM_APBAMASK_EIC;
+  GCLK->CLKCTRL.reg =
+    GCLK_CLKCTRL_ID(GCLK_CLKCTRL_ID_EIC)
+    | GCLK_CLKCTRL_CLKEN
+    | GCLK_CLKCTRL_GEN(0);
+
+  // Enable interrupt for external pin
+  EIC->INTENSET.reg |= EIC_EVCTRL_EXTINTEO(0x01ul << fl_int);
+  EIC->CONFIG[fl_int / 8].reg = EIC_CONFIG_SENSE0_BOTH << 4 * (fl_int % 8);
+  NVIC_EnableIRQ(EIC_IRQn);
+
+  // Enable external interrupts
+  EIC->CTRL.reg |= EIC_CTRL_ENABLE;
+}
+
+//-----------------------------------------------------------------------------
+// Initialize flank timer
+void loconet_init_flank_timer(Tc *timer, uint32_t pm_tmr_mask, uint32_t gclock_tmr_id, uint32_t nvic_irqn)
+{
+  // Save timer
+  loconet_flank_timer = timer;
+
+  // Enable clock for flank timer, without prescaler
+  PM->APBCMASK.reg |= pm_tmr_mask;
+  GCLK->CLKCTRL.reg =
+    GCLK_CLKCTRL_ID(gclock_tmr_id)
+    | GCLK_CLKCTRL_CLKEN
+    | GCLK_CLKCTRL_GEN(0);
+
+  /* CTRLA register:
+   *   PRESCSYNC: 0x02  RESYNC
+   *   RUNSTDBY:        Ignored
+   *   PRESCALER: 0x03  DIV8, each tick will be 1us
+   *   WAVEGEN:   0x01  MFRQ, zero counter on match
+   *   MODE:      0x00  16 bits timer
+   */
+  loconet_flank_timer->COUNT16.CTRLA.reg =
+    TC_CTRLA_PRESCSYNC_RESYNC
+    | TC_CTRLA_PRESCALER_DIV8
+    | TC_CTRLA_WAVEGEN_MFRQ
+    | TC_CTRLA_MODE_COUNT16;
+
+  /* INTERRUPTS:
+   *   Interrupt on match
+   */
+  loconet_flank_timer->COUNT16.INTENSET.reg = TC_INTENSET_MC(1);
+  NVIC_EnableIRQ(nvic_irqn);
 }
 
 //-----------------------------------------------------------------------------
