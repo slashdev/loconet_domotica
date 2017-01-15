@@ -569,7 +569,7 @@ uint8_t process_loconet_rx_ringbuffer(void)
   }
 
   // Check if we have all the bytes for this message
-  if (writer <= reader + message_size) {
+  if (writer < reader + message_size) {
     return 0;
   }
 
