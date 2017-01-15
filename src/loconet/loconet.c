@@ -10,6 +10,73 @@
 #include "loconet.h"
 
 //-----------------------------------------------------------------------------
+// Peripherals to use for communication
+Sercom *loconet_sercom;
+
+//-----------------------------------------------------------------------------
+// Initialize USART for loconet
+void loconet_init_usart(Sercom *sercom, uint32_t pm_apbc_mask, uint32_t gclock_id, uint8_t rx_pad, uint32_t nvic_irqn)
+{
+  // Save sercom
+  loconet_sercom = sercom;
+
+  // Enable clock for peripheral, without prescaler
+  PM->APBCMASK.reg |= pm_apbc_mask;
+  GCLK->CLKCTRL.reg =
+    GCLK_CLKCTRL_ID(gclock_id)
+    | GCLK_CLKCTRL_CLKEN
+    | GCLK_CLKCTRL_GEN(0);
+
+  /* CRTLA register:
+   *   DORD:      0x01  LSB first
+   *   CPOL:      0x00  Tx: rising, Rx: falling
+   *   CMODE:     0x00  Async
+   *   FORM:      0x00  USART Frame (without parity)
+   *   RXPO:      0x03  Rx on PA15
+   *   TXPO:      0x00  Tx on PA14
+   *   IBON:      0x00  Ignored
+   *   RUNSTDBY:  0x00  Ignored
+   *   MODE:      0x01  USART with internal clock
+   *   ENABLE:    0x01  Enabled (set at the end of the init)
+   */
+  loconet_sercom->USART.CTRLA.reg =
+    SERCOM_USART_CTRLA_DORD
+    | SERCOM_USART_CTRLA_MODE_USART_INT_CLK
+    | SERCOM_USART_CTRLA_RXPO(rx_pad)
+    | SERCOM_USART_CTRLA_TXPO;
+
+  /* CTRLB register:
+   *   RXEN:      0x01  Enable Rx
+   *   TXEN:      0x00  Only enable Tx when sending
+   *   PMODE:     0x00  Ignored, parity is not used
+   *   SFDE:      0x00  Ignored, chip does not go into standby
+   *   SBMODE:    0x00  One stop bit
+   *   CHSIZE:    0x00  Char size: 8 bits
+   */
+  loconet_sercom->USART.CTRLB.reg =
+    SERCOM_USART_CTRLB_RXEN
+    | SERCOM_USART_CTRLB_TXEN
+    | SERCOM_USART_CTRLB_CHSIZE(0);
+
+  uint64_t br = (uint64_t)65536 * (F_CPU - 16 * 16666) / F_CPU;
+  loconet_sercom->USART.BAUD.reg = (uint16_t)br;
+
+  /* INTERRUPTS register
+   *   RXS:       0x00  No interrupt on Rx start
+   *   RXC:       0x01  Interrupt on Rx complete
+   *   TXC:       0x01  Interrupt on Tx complete
+   *   DRE:       0x00  No interrupt on data registry empty
+   */
+  loconet_sercom->USART.INTENSET.reg =
+    SERCOM_USART_INTENSET_RXC
+    | SERCOM_USART_INTENSET_TXC;
+  NVIC_EnableIRQ(nvic_irqn);
+
+  // Enable USART
+  loconet_sercom->USART.CTRLA.reg |= SERCOM_USART_CTRLA_ENABLE;
+}
+
+//-----------------------------------------------------------------------------
 // Define LOCONET_RX_RINGBUFFER_Size if it's not defined
 #ifndef LOCONET_RX_RINGBUFFER_Size
 #define LOCONET_RX_RINGBUFFER_Size 64

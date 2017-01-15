@@ -73,6 +73,7 @@
 
 //-----------------------------------------------------------------------------
 extern void loconet_init(void);
+extern void loconet_init_usart(Sercom*, uint32_t, uint32_t, uint8_t, uint32_t);
 extern void loconet_rx_ringbuffer_push(uint8_t byte);
 extern void loconet_start_timer_delay(uint16_t delay_us);
 extern void loconet_handle_eic(void);
@@ -96,60 +97,14 @@ extern void loconet_handle_eic(void);
     HAL_GPIO_LOCONET_FL_in();                                                 \
     HAL_GPIO_LOCONET_FL_pullup();                                             \
     HAL_GPIO_LOCONET_FL_pmuxen(PORT_PMUX_PMUXE_A_Val);                        \
-    /* Enable clock for peripheral, without prescaler */ \
-    PM->APBCMASK.reg |= PM_APBCMASK_SERCOM##sercom; \
-    GCLK->CLKCTRL.reg = \
-      GCLK_CLKCTRL_ID(SERCOM##sercom##_GCLK_ID_CORE) | \
-      GCLK_CLKCTRL_CLKEN | \
-      GCLK_CLKCTRL_GEN(0); \
-    \
-    /* CRTLA register:
-     *   DORD:      0x01  LSB first
-     *   CPOL:      0x00  Tx: rising, Rx: falling
-     *   CMODE:     0x00  Async
-     *   FORM:      0x00  USART Frame (without parity)
-     *   RXPO:      0x03  Rx on PA15
-     *   TXPO:      0x00  Tx on PA14
-     *   IBON:      0x00  Ignored
-     *   RUNSTDBY:  0x00  Ignored
-     *   MODE:      0x01  USART with internal clock
-     *   ENABLE:    0x01  Enabled (set at the end of the init)
-     */ \
-    SERCOM##sercom->USART.CTRLA.reg = \
-      SERCOM_USART_CTRLA_DORD | \
-      SERCOM_USART_CTRLA_MODE_USART_INT_CLK | \
-      SERCOM_USART_CTRLA_RXPO(rx_pad) | \
-      SERCOM_USART_CTRLA_TXPO; \
-    \
-    /* CTRLB register:
-     *   RXEN:      0x01  Enable Rx
-     *   TXEN:      0x00  Only enable Tx when sending
-     *   PMODE:     0x00  Ignored, parity is not used
-     *   SFDE:      0x00  Ignored, chip does not go into standby
-     *   SBMODE:    0x00  One stop bit
-     *   CHSIZE:    0x00  Char size: 8 bits
-     */ \
-    SERCOM##sercom->USART.CTRLB.reg = \
-      SERCOM_USART_CTRLB_RXEN | \
-      SERCOM_USART_CTRLB_TXEN | \
-      SERCOM_USART_CTRLB_CHSIZE(0); \
-    \
-    uint64_t br = (uint64_t)65536 * (F_CPU - 16 * 16666) / F_CPU; \
-    SERCOM##sercom->USART.BAUD.reg = (uint16_t)br; \
-    \
-    /* INTERRUPTS register
-     *   RXS:       0x00  No interrupt on Rx start
-     *   RXC:       0x01  Interrupt on Rx complete
-     *   TXC:       0x01  Interrupt on Tx complete
-     *   DRE:       0x00  No interrupt on data registry empty
-     */ \
-    SERCOM##sercom->USART.INTENSET.reg = \
-      SERCOM_USART_INTENSET_RXC | \
-      SERCOM_USART_INTENSET_TXC; \
-    NVIC_EnableIRQ(SERCOM##sercom##_IRQn); \
-    \
-    /* Enable USART */ \
-    SERCOM##sercom->USART.CTRLA.reg |= SERCOM_USART_CTRLA_ENABLE; \
+    /* Set loconet_sercom */                                                  \
+    loconet_init_usart(                                                       \
+      SERCOM##sercom,                                                         \
+      PM_APBCMASK_SERCOM##sercom,                                             \
+      SERCOM##sercom##_GCLK_ID_CORE,                                          \
+      rx_pad,                                                                 \
+      SERCOM##sercom##_IRQn                                                   \
+    );                                                                        \
                                                                               \
     /* Flank detection */                                                     \
     /* Enable clock for external interrupts, without prescaler */             \
