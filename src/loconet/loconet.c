@@ -15,13 +15,13 @@ Sercom *loconet_sercom;
 
 //-----------------------------------------------------------------------------
 // Initialize USART for loconet
-void loconet_init_usart(Sercom *sercom, uint32_t pm_apbc_mask, uint32_t gclock_id, uint8_t rx_pad, uint32_t nvic_irqn)
+void loconet_init_usart(Sercom *sercom, uint32_t pm_mask, uint32_t gclock_id, uint8_t rx_pad, uint32_t nvic_irqn)
 {
   // Save sercom
   loconet_sercom = sercom;
 
   // Enable clock for peripheral, without prescaler
-  PM->APBCMASK.reg |= pm_apbc_mask;
+  PM->APBCMASK.reg |= pm_mask;
   GCLK->CLKCTRL.reg =
     GCLK_CLKCTRL_ID(gclock_id)
     | GCLK_CLKCTRL_CLKEN
