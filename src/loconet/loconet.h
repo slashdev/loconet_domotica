@@ -36,11 +36,11 @@
  * Before you can use the logger functions, initialize the logger
  * using `logger_init(baudrate);`.
  *
- * To process incoming messages from loconet, place
- * `process_loconet_rx_ringbuffer` in your main loop, e.g.:
+ * To process incoming messages from loconet, place `loconet_loop`
+ * in your main loop, e.g.:
  *
  *   while (1) {
- *     process_loconet_rx_ringbuffer();
+ *     loconet_loop();
  *   }
  *
  * To process the flank detection we need to use the external
@@ -112,6 +112,11 @@ extern void loconet_irq_sercom(void);
 
 extern void loconet_handle_eic(void);
 
+//-----------------------------------------------------------------------------
+// Loconet loop to be used in the main loop
+// Handles processing and sending of messages
+extern void loconet_loop(void);
+
 // Macro for loconet_init and irq_handler_sercom<nr>
 #define LOCONET_BUILD(sercom, tx_port, tx_pin, rx_port, rx_pin, rx_pad, fl_port, fl_pin, fl_int, fl_tmr) \
   HAL_GPIO_PIN(LOCONET_TX, tx_port, tx_pin);                                  \
@@ -181,8 +186,6 @@ extern void loconet_handle_eic(void);
   {                                                                           \
     loconet_irq_sercom();                                                     \
   }                                                                           \
-
-//-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
 

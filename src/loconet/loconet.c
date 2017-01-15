@@ -639,3 +639,11 @@ void ln_handler_dummy_n(uint8_t *d, uint8_t l)
   (void)d;
   (void)l;
 }
+
+//-----------------------------------------------------------------------------
+void loconet_loop(void)
+{
+  // If a message is received and handled,
+  // keep processing new messages
+  while(process_loconet_rx_ringbuffer());
+}
