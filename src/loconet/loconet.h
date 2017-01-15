@@ -189,8 +189,5 @@ extern void loconet_loop(void);
 
 //-----------------------------------------------------------------------------
 
-//-----------------------------------------------------------------------------
-// Process the loconet rx ringbuffer.
-extern uint8_t process_loconet_rx_ringbuffer(void);
 
 #endif // _LOCONET_LOCONET_H_

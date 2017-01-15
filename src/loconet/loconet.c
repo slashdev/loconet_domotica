@@ -523,7 +523,7 @@ typedef union {
 #define LOCONET_OPCODE_FLAG (0x01ul << LOCONET_OPCODE_FLAG_Pos)
 
 //-----------------------------------------------------------------------------
-uint8_t process_loconet_rx_ringbuffer(void)
+static uint8_t loconet_rx_process(void)
 {
   // Get values from ringbuffer
   uint8_t *buffer = loconet_rx_ringbuffer.buffer;
@@ -641,9 +641,9 @@ void ln_handler_dummy_n(uint8_t *d, uint8_t l)
 }
 
 //-----------------------------------------------------------------------------
+// Should be included in the main loop to keep loconet going.
 void loconet_loop(void)
 {
-  // If a message is received and handled,
-  // keep processing new messages
-  while(process_loconet_rx_ringbuffer());
+  // If a message is received and handled, keep processing new messages
+  while(loconet_rx_process());
 }
