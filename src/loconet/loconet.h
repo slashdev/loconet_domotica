@@ -72,6 +72,28 @@
 #endif
 
 //-----------------------------------------------------------------------------
+typedef union {
+  struct {
+    uint16_t ADDRESS:10;
+    uint8_t  MASTER:1;
+    uint8_t  PRIORITY:4;
+    uint8_t  :1;
+  } bit;
+  uint16_t reg;
+} LOCONET_CONFIG_Type;
+
+#define LOCONET_CONFIG_ADDRESS_Pos 0
+#define LOCONET_CONFIG_ADDRESS_Mask (0x3FFul << LOCONET_CONFIG_ADDRESS_Pos)
+#define LOCONET_CONFIG_ADDRESS(value) (LOCONET_CONFIG_ADDRESS_Mask & ((value) << LOCONET_CONFIG_ADDRESS_Pos))
+#define LOCONET_CONFIG_MASTER_Pos 10
+#define LOCONET_CONFIG_MASTER (0x01ul << LOCONET_CONFIG_MASTER_Pos)
+#define LOCONET_CONFIG_PRIORITY_Pos 11
+#define LOCONET_CONFIG_PRIORITY_Mask (0x3FFul << LOCONET_CONFIG_PRIORITY_Pos)
+#define LOCONET_CONFIG_PRIORITY(value) (LOCONET_CONFIG_ADDRESS_Mask & ((value) << LOCONET_CONFIG_PRIORITY_Pos))
+
+extern LOCONET_CONFIG_Type loconet_config;
+
+//-----------------------------------------------------------------------------
 // Initializations
 extern void loconet_init(void);
 extern void loconet_init_usart(Sercom*, uint32_t, uint32_t, uint8_t, uint32_t);

@@ -19,6 +19,10 @@ Sercom *loconet_sercom;
 Tc *loconet_flank_timer;
 
 //-----------------------------------------------------------------------------
+// Global variables
+LOCONET_CONFIG_Type loconet_config = { 0 };
+
+//-----------------------------------------------------------------------------
 // Initialize USART for loconet
 void loconet_init_usart(Sercom *sercom, uint32_t pm_mask, uint32_t gclock_id, uint8_t rx_pad, uint32_t nvic_irqn)
 {
