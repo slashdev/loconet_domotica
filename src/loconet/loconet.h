@@ -72,8 +72,17 @@
 #endif
 
 //-----------------------------------------------------------------------------
+// Initializations
 extern void loconet_init(void);
 extern void loconet_init_usart(Sercom*, uint32_t, uint32_t, uint8_t, uint32_t);
+
+//-----------------------------------------------------------------------------
+// IRQs for flank rise / fall
+extern void loconet_irq_flank_rise(void);
+extern void loconet_irq_flank_fall(void);
+// IRQ for timeout of timer
+extern void loconet_irq_timer(void);
+
 extern void loconet_rx_ringbuffer_push(uint8_t byte);
 extern void loconet_start_timer_delay(uint16_t delay_us);
 extern void loconet_handle_eic(void);
@@ -195,13 +204,8 @@ extern void loconet_handle_eic(void);
   } \
 
 //-----------------------------------------------------------------------------
-// IRQ for flank rise / fall
-extern void loconet_irq_flank_rise(void);
-extern void loconet_irq_flank_fall(void);
 
 //-----------------------------------------------------------------------------
-// IRQ for timeout of timer
-extern void loconet_irq_timer(void);
 
 //-----------------------------------------------------------------------------
 // Process the loconet rx ringbuffer.
