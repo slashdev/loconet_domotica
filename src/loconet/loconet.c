@@ -187,6 +187,54 @@ void loconet_rx_ringbuffer_push(uint8_t byte)
 }
 
 //-----------------------------------------------------------------------------
+typedef union {
+  struct {
+    uint8_t IDLE:1;
+    uint8_t TRANSMIT:1;
+    uint8_t COLLISION_DETECTED:1;
+    uint8_t :5;
+  } bit;
+  uint8_t reg;
+} LOCONET_STATUS_Type;
+
+#define LOCONET_STATUS_IDLE_Pos 0
+#define LOCONET_STATUS_IDLE (0x01ul << LOCONET_STATUS_IDLE_Pos)
+#define LOCONET_STATUS_TRANSMIT_Pos 1
+#define LOCONET_STATUS_TRANSMIT (0x01ul << LOCONET_STATUS_TRANSMIT_Pos)
+#define LOCONET_STATUS_COLLISION_DETECT_Pos 2
+#define LOCONET_STATUS_COLLISION_DETECT (0x01ul << LOCONET_STATUS_COLLISION_DETECT_Pos)
+
+static LOCONET_STATUS_Type loconet_status = { 0 };
+
+//-----------------------------------------------------------------------------
+typedef union {
+  struct {
+    uint8_t CARRIER_DETECT:1;
+    uint8_t MASTER_DELAY:1;
+    uint8_t LINE_BREAK:1;
+    uint8_t PRIORITY_DELAY:1;
+    uint8_t :4;
+  } bit;
+  uint8_t reg;
+} LOCONET_TIMER_STATUS_Type;
+
+#define LOCONET_TIMER_STATUS_CARRIER_DETECT_Pos 0
+#define LOCONET_TIMER_STATUS_CARRIER_DETECT (0x01ul << LOCONET_TIMER_STATUS_CARRIER_DETECT_Pos)
+#define LOCONET_TIMER_STATUS_MASTER_DELAY_Pos 1
+#define LOCONET_TIMER_STATUS_MASTER_DELAY (0x01ul << LOCONET_TIMER_STATUS_MASTER_DELAY_Pos)
+#define LOCONET_TIMER_STATUS_LINE_BREAK_Pos 2
+#define LOCONET_TIMER_STATUS_LINE_BREAK (0x01ul << LOCONET_TIMER_STATUS_LINE_BREAK_Pos)
+#define LOCONET_TIMER_STATUS_PRIORITY_DELAY_Pos 3
+#define LOCONET_TIMER_STATUS_PRIORITY_DELAY (0x01ul << LOCONET_TIMER_STATUS_PRIORITY_DELAY_Pos)
+
+#define LOCONET_DELAY_CARRIER_DETECT 1200 /* 20x bit time (60ux) */
+#define LOCONET_DELAY_MASTER_DELAY    360 /*  6x bit time (60us) */
+#define LOCONET_DELAY_LINE_BREAK      900 /* 15x bit time (60us) */
+#define LOCONET_DELAY_PRIORITY_DELAY   60 /*  1x bit time (60ux) */
+
+static LOCONET_TIMER_STATUS_Type loconet_timer_status = { 0 };
+
+//-----------------------------------------------------------------------------
 static void loconet_flank_timer_delay(uint16_t delay_us) {
   // Set timer counter to 0
   loconet_flank_timer->COUNT16.COUNT.reg = 0;
@@ -198,14 +246,44 @@ static void loconet_flank_timer_delay(uint16_t delay_us) {
 
 //-----------------------------------------------------------------------------
 void loconet_irq_flank_rise(void) {
+  loconet_flank_timer_delay(LOCONET_DELAY_CARRIER_DETECT);
+  loconet_timer_status.reg = LOCONET_TIMER_STATUS_CARRIER_DETECT;
+  // If flank changes, loconet is not idle anymore
+  loconet_status.bit.IDLE = 0;
 }
 
 //-----------------------------------------------------------------------------
 void loconet_irq_flank_fall(void) {
+  loconet_flank_timer_delay(LOCONET_DELAY_LINE_BREAK);
+  loconet_timer_status.reg = LOCONET_TIMER_STATUS_LINE_BREAK;
+  // If flank changes, loconet is not idle anymore
+  loconet_status.bit.IDLE = 0;
+  // TODO: BREAK DETECT
 }
 
 //-----------------------------------------------------------------------------
 void loconet_irq_timer(void) {
+  // Carrier detect?
+  if (loconet_timer_status.bit.CARRIER_DETECT) {
+    if (loconet_config.bit.MASTER) {
+      // Master, set as idle directly
+      loconet_status.reg |= LOCONET_STATUS_IDLE;
+    } else {
+      // Start master delay
+      loconet_flank_timer_delay(LOCONET_DELAY_MASTER_DELAY);
+      loconet_timer_status.reg = LOCONET_TIMER_STATUS_MASTER_DELAY;
+    }
+  } else if (loconet_timer_status.bit.MASTER_DELAY) {
+    if (loconet_config.bit.PRIORITY) {
+      // Start priority delay
+      loconet_flank_timer_delay(loconet_config.bit.PRIORITY * LOCONET_DELAY_PRIORITY_DELAY);
+      loconet_timer_status.reg = LOCONET_TIMER_STATUS_PRIORITY_DELAY;
+    } else {
+      loconet_status.reg |= LOCONET_STATUS_IDLE;
+    }
+  } else if (loconet_timer_status.bit.PRIORITY_DELAY) {
+    loconet_status.reg |= LOCONET_STATUS_IDLE;
+  }
 }
 
 //-----------------------------------------------------------------------------
