@@ -77,6 +77,22 @@ void loconet_init_usart(Sercom *sercom, uint32_t pm_apbc_mask, uint32_t gclock_i
 }
 
 //-----------------------------------------------------------------------------
+// Handle sercom (usart) interrupt
+void loconet_irq_sercom(void)
+{
+  // Rx complete
+  if (loconet_sercom->USART.INTFLAG.bit.RXC) {
+    // Get data from USART and place it in the ringbuffer
+    loconet_rx_ringbuffer_push(loconet_sercom->USART.DATA.reg);
+  }
+
+  // Tx complete
+  if (loconet_sercom->USART.INTFLAG.bit.TXC) {
+    // TODO: Handle TX complete
+  }
+}
+
+//-----------------------------------------------------------------------------
 // Define LOCONET_RX_RINGBUFFER_Size if it's not defined
 #ifndef LOCONET_RX_RINGBUFFER_Size
 #define LOCONET_RX_RINGBUFFER_Size 64

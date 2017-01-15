@@ -82,6 +82,8 @@ extern void loconet_irq_flank_rise(void);
 extern void loconet_irq_flank_fall(void);
 // IRQ for timeout of timer
 extern void loconet_irq_timer(void);
+// IRQ for sercom
+extern void loconet_irq_sercom(void);
 
 extern void loconet_rx_ringbuffer_push(uint8_t byte);
 extern void loconet_start_timer_delay(uint16_t delay_us);
@@ -187,21 +189,12 @@ extern void loconet_handle_eic(void);
     /* Handle loconet timer */                                                \
     loconet_irq_timer();                                                      \
   }                                                                           \
-  /* Handle received bytes */ \
-  void irq_handler_sercom##sercom(void); \
-  void irq_handler_sercom##sercom(void) \
-  { \
-    /* Rx complete */ \
-    if (SERCOM##sercom->USART.INTFLAG.bit.RXC) { \
-      /* Get data from USART and place it in the ringbuffer */ \
-      loconet_rx_ringbuffer_push(SERCOM##sercom->USART.DATA.reg); \
-    } \
-    \
-    /* Tx complete */ \
-    if (SERCOM##sercom->USART.INTFLAG.bit.TXC) { \
-      /* TODO: Handle TX complete */ \
-    } \
-  } \
+  /* Handle received bytes */                                                 \
+  void irq_handler_sercom##sercom(void);                                      \
+  void irq_handler_sercom##sercom(void)                                       \
+  {                                                                           \
+    loconet_irq_sercom();                                                     \
+  }                                                                           \
 
 //-----------------------------------------------------------------------------
 
