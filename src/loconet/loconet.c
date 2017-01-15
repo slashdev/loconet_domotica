@@ -11,7 +11,6 @@
 
 //-----------------------------------------------------------------------------
 // Prototypes
-void loconet_rx_ringbuffer_push(uint8_t byte);
 
 //-----------------------------------------------------------------------------
 // Peripherals to use for communication
@@ -140,22 +139,6 @@ void loconet_init_flank_timer(Tc *timer, uint32_t pm_tmr_mask, uint32_t gclock_t
 }
 
 //-----------------------------------------------------------------------------
-// Handle sercom (usart) interrupt
-void loconet_irq_sercom(void)
-{
-  // Rx complete
-  if (loconet_sercom->USART.INTFLAG.bit.RXC) {
-    // Get data from USART and place it in the ringbuffer
-    loconet_rx_ringbuffer_push(loconet_sercom->USART.DATA.reg);
-  }
-
-  // Tx complete
-  if (loconet_sercom->USART.INTFLAG.bit.TXC) {
-    // TODO: Handle TX complete
-  }
-}
-
-//-----------------------------------------------------------------------------
 // Define LOCONET_RX_RINGBUFFER_Size if it's not defined
 #ifndef LOCONET_RX_RINGBUFFER_Size
 #define LOCONET_RX_RINGBUFFER_Size 64
@@ -170,7 +153,7 @@ typedef struct {
 static LOCONET_RX_RINGBUFFER_Type loconet_rx_ringbuffer = { { 0 }, 0, 0};
 
 //-----------------------------------------------------------------------------
-void loconet_rx_ringbuffer_push(uint8_t byte)
+static void loconet_rx_ringbuffer_push(uint8_t byte)
 {
   // Get index + 1 of buffer head
   uint8_t index = (loconet_rx_ringbuffer.writer + 1) % LOCONET_RX_RINGBUFFER_Size;
@@ -283,6 +266,22 @@ void loconet_irq_timer(void) {
     }
   } else if (loconet_timer_status.bit.PRIORITY_DELAY) {
     loconet_status.reg |= LOCONET_STATUS_IDLE;
+  }
+}
+
+//-----------------------------------------------------------------------------
+// Handle sercom (usart) interrupt
+void loconet_irq_sercom(void)
+{
+  // Rx complete
+  if (loconet_sercom->USART.INTFLAG.bit.RXC) {
+    // Get data from USART and place it in the ringbuffer
+    loconet_rx_ringbuffer_push(loconet_sercom->USART.DATA.reg);
+  }
+
+  // Tx complete
+  if (loconet_sercom->USART.INTFLAG.bit.TXC) {
+    // TODO: Handle TX complete
   }
 }
 
