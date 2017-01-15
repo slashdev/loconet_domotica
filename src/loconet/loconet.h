@@ -88,7 +88,6 @@ extern void loconet_irq_timer(void);
 extern void loconet_irq_sercom(void);
 
 extern void loconet_rx_ringbuffer_push(uint8_t byte);
-extern void loconet_start_timer_delay(uint16_t delay_us);
 extern void loconet_handle_eic(void);
 
 // Macro for loconet_init and irq_handler_sercom<nr>
@@ -129,14 +128,6 @@ extern void loconet_handle_eic(void);
       TC##fl_tmr##_GCLK_ID,                                                   \
       TC##fl_tmr##_IRQn                                                       \
     );                                                                        \
-  }                                                                           \
-  void loconet_start_timer_delay(uint16_t delay_us) {                         \
-    /* Set timer counter to 0 */                                              \
-    TC##fl_tmr->COUNT16.COUNT.reg = 0;                                        \
-    /* Set timer match, 1200us */                                             \
-    TC##fl_tmr->COUNT16.CC[0].reg = delay_us;                                 \
-    /* Enable timer */                                                        \
-    TC##fl_tmr->COUNT16.CTRLA.reg |= TC_CTRLA_ENABLE;                         \
   }                                                                           \
   void loconet_handle_eic(void) {                                             \
     /* Return if it's not our external pin to watch */                        \
