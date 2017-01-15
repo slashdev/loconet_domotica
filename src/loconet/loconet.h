@@ -57,6 +57,7 @@
  *   }
  *
  * @author Ferdi van der Werf <ferdi@slashdev.nl>
+ * @author Jan Martijn van der Werf <janmartijn@slashdev.nl>
  */
 
 #ifndef _LOCONET_LOCONET_H_

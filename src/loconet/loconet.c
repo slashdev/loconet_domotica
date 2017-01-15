@@ -6,6 +6,7 @@
  * \license This project is released under MIT license.
  *
  * @author Ferdi van der Werf <ferdi@slashdev.nl>
+ * @author Jan Martijn van der Werf <janmartijn@slashdev.nl>
  */
 #include "loconet.h"
 
