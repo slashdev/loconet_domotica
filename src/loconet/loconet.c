@@ -691,6 +691,8 @@ static uint8_t loconet_calc_checksum(uint8_t *data, uint8_t length)
 void loconet_tx_queue_0(uint8_t opcode, uint8_t priority)
 {
   LOCONET_MESSAGE_Type *message = loconet_build_message(2);
+  // Set priority
+  message->priority = priority;
   // Fill message
   message->data[0] = opcode;
   message->data[1] = loconet_calc_checksum(message->data, 1);
