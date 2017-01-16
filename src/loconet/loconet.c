@@ -673,6 +673,14 @@ static void loconet_tx_enqueue(LOCONET_MESSAGE_Type *message)
 // Build an empty message with the correct length
 static LOCONET_MESSAGE_Type *loconet_build_message(uint8_t length)
 {
+  // Allocate space for linked list node
+  LOCONET_MESSAGE_Type *message = malloc(sizeof(LOCONET_MESSAGE_Type));
+  memset(message, 0, sizeof(LOCONET_MESSAGE_Type));
+  // Allocate space for message bytes
+  message->data = malloc(sizeof(uint8_t) * length);
+  message->data_length = length;
+  // Return the new message
+  return message;
 }
 
 //-----------------------------------------------------------------------------
