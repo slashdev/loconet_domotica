@@ -674,6 +674,15 @@ void ln_handler_dummy_n(uint8_t *d, uint8_t l)
 }
 
 //-----------------------------------------------------------------------------
+// Stop transmission and free memory of the message
+void loconet_tx_stop(void)
+{
+  loconet_status.bit.TRANSMIT = 0;
+  free(loconet_tx_current->data);
+  free(loconet_tx_current);
+}
+
+//-----------------------------------------------------------------------------
 // Start transmitting bytes
 static void loconet_tx_start(void)
 {
@@ -722,14 +731,6 @@ void loconet_loop(void)
   while(loconet_rx_process());
   // If a message is sent, keep sending messages
   while(loconet_tx_process());
-}
-
-//-----------------------------------------------------------------------------
-void loconet_tx_stop(void)
-{
-  loconet_status.bit.TRANSMIT = 0;
-  free(loconet_tx_current->data);
-  free(loconet_tx_current);
 }
 
 //-----------------------------------------------------------------------------
