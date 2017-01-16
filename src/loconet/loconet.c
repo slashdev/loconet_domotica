@@ -12,6 +12,7 @@
 
 //-----------------------------------------------------------------------------
 // Prototypes
+void loconet_tx_stop(void);
 
 //-----------------------------------------------------------------------------
 // Peripherals to use for communication
@@ -298,7 +299,10 @@ void loconet_irq_sercom(void)
 
   // Tx complete
   if (loconet_sercom->USART.INTFLAG.bit.TXC) {
-    // TODO: Handle TX complete
+    // Clear TXC flag
+    loconet_sercom->USART.INTFLAG.reg |= SERCOM_USART_INTFLAG_TXC;
+    // Clear transmit state and free memory
+    loconet_tx_stop();
   }
 }
 
@@ -662,6 +666,14 @@ void loconet_loop(void)
 {
   // If a message is received and handled, keep processing new messages
   while(loconet_rx_process());
+}
+
+//-----------------------------------------------------------------------------
+void loconet_tx_stop(void)
+{
+  loconet_status.bit.TRANSMIT = 0;
+  free(loconet_tx_current->data);
+  free(loconet_tx_current);
 }
 
 //-----------------------------------------------------------------------------
