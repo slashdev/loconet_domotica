@@ -663,3 +663,74 @@ void loconet_loop(void)
   // If a message is received and handled, keep processing new messages
   while(loconet_rx_process());
 }
+
+//-----------------------------------------------------------------------------
+static void loconet_tx_enqueue(LOCONET_MESSAGE_Type *message)
+{
+}
+
+//-----------------------------------------------------------------------------
+// Build an empty message with the correct length
+static LOCONET_MESSAGE_Type *loconet_build_message(uint8_t length)
+{
+}
+
+//-----------------------------------------------------------------------------
+// Calculate the checksum of a message
+static uint8_t loconet_tx_calc_checksum(uint8_t *data, uint8_t length)
+{
+}
+
+//-----------------------------------------------------------------------------
+void loconet_tx_queue_0(uint8_t opcode, uint8_t priority)
+{
+  LOCONET_MESSAGE_Type *message = loconet_build_message(2);
+  // Fill message
+  message->data[0] = opcode;
+  message->data[1] = loconet_tx_calc_checksum(message->data, 1);
+  // Enqueue message
+  loconet_tx_enqueue(message);
+}
+
+void loconet_tx_queue_2(uint8_t opcode, uint8_t priority, uint8_t  a, uint8_t b)
+{
+  LOCONET_MESSAGE_Type *message = loconet_build_message(4);
+  // Set priority
+  message->priority = priority;
+  // Fill message
+  message->data[0] = opcode;
+  message->data[1] = a;
+  message->data[2] = b;
+  message->data[3] = loconet_tx_calc_checksum(message->data, 3);
+  // Enqueue message
+  loconet_tx_enqueue(message);
+}
+
+void loconet_tx_queue_4(uint8_t opcode, uint8_t priority, uint8_t  a, uint8_t b, uint8_t c, uint8_t d)
+{
+  LOCONET_MESSAGE_Type *message = loconet_build_message(6);
+  // Set priority
+  message->priority = priority;
+  // Fill message
+  message->data[0] = opcode;
+  message->data[1] = a;
+  message->data[2] = b;
+  message->data[3] = c;
+  message->data[4] = d;
+  message->data[5] = loconet_tx_calc_checksum(message->data, 5);
+  // Enqueue message
+  loconet_tx_enqueue(message);
+}
+
+void loconet_tx_queue_n(uint8_t opcode, uint8_t priority, uint8_t *data, uint8_t length)
+{
+  LOCONET_MESSAGE_Type *message = loconet_build_message(length + 2);
+  // Set priority
+  message->priority = priority;
+  // Fill message
+  message->data[0] = opcode;
+  for(uint8_t idx = 0; idx < length; message->data[idx+1] = data[idx], idx++);
+  message->data[length+1] = loconet_tx_calc_checksum(message->data, length + 1);
+  // Enqueue message
+  loconet_tx_enqueue(message);
+}
