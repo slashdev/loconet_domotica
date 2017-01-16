@@ -667,6 +667,28 @@ void loconet_loop(void)
 //-----------------------------------------------------------------------------
 static void loconet_tx_enqueue(LOCONET_MESSAGE_Type *message)
 {
+  // If queue is empty, push it
+  if (!loconet_tx_queue) {
+    loconet_tx_queue = message;
+    return;
+  }
+
+  // Pointers to previous and current node
+  LOCONET_MESSAGE_Type *prev = loconet_tx_queue;
+  LOCONET_MESSAGE_Type *curr = loconet_tx_queue->next;
+
+  // Loop through message which are more important (lower priority)
+  for (; curr && curr->priority < message->priority + 1; prev = curr, curr = curr->next);
+
+  // Loop through messages which have the same priority.
+  // All priority should be lowered by 1, and place the message at the end.
+  for (; curr && curr->priority < message->priority + 2; curr->priority--, prev = curr, curr = curr->next);
+  prev->next = message;
+  message->next = curr;
+
+  // All next messages should have their priorities decreased.
+  // This prevents starvation of messages at the end of the queue
+  for (; curr; curr->priority--, curr = curr->next);
 }
 
 //-----------------------------------------------------------------------------
