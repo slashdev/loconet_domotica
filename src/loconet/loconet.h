@@ -17,6 +17,11 @@
  * - rx_pin:  the PIN of the RX input (e.g. 15)
  * - rx_pad:  the PAD to use for RX input on the SERCOM interface
  *     (e.g. 1, see datasheet)
+ * - fl_port: the PORT of the FLANK detection (e.g. A)
+ * - fl_pin:  the PIN of the FLANK detection (e.g. 13)
+ * - fl_int:  the external interrupt associated to fl_pin
+ *     (e.g. 1, see datasheet)
+ * - fl_tmr:  the TIMER used for Carrier and Break detection
  *
  * Loconet uses CSMA/CD techniques to arbitrage and control network
  * access. The bit times are 60 uSecs or 16.66 KBaud +/- 1.5%. This
@@ -24,114 +29,171 @@
  * sent asynchonous using 1 start bit, 8 data bits and 1 stop bit.
  * The data is sent LSB first. Bytes can be sent back-to-back.
  *
+ * Flank detection is used to start the delays for carrier detect
+ * and break detect. The current code assumes the chip to run with
+ * F_CPU 8 MHz.
+ *
  * Before you can use the logger functions, initialize the logger
  * using `logger_init(baudrate);`.
  *
- * To process incoming messages from loconet, place
- * `process_loconet_rx_ringbuffer` in your main loop, e.g.:
+ * To process incoming messages from loconet, place `loconet_loop`
+ * in your main loop, e.g.:
  *
  *   while (1) {
- *     process_loconet_rx_ringbuffer();
+ *     loconet_loop();
+ *   }
+ *
+ * To process the flank detection we need to use the external
+ * interrups. But we don't want to claim all external interrupt
+ * handling for loconet, so you'll have to catch the interrupt
+ * and call our handler. If our handler returns 1, it has handled
+ * the interrupt and you could skip the rest of your handling, e.g.:
+ *
+ *   void irq_handler_eic(void);
+ *   void irq_handler_eic(void) {
+ *     if (loconet_handle_eic()) {
+ *       return;
+ *     }
  *   }
  *
  * @author Ferdi van der Werf <ferdi@slashdev.nl>
+ * @author Jan Martijn van der Werf <janmartijn@slashdev.nl>
  */
 
 #ifndef _LOCONET_LOCONET_H_
 #define _LOCONET_LOCONET_H_
 
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 #include "samd20.h"
 
 //-----------------------------------------------------------------------------
-extern void loconet_init(void);
-extern void loconet_rx_ringbuffer_push(uint8_t byte);
-
-// Marco for loconet_init and irq_handler_sercom<nr>
-#define LOCONET_BUILD(sercom, tx_port, tx_pin, rx_port, rx_pin, rx_pad) \
-  HAL_GPIO_PIN(LOCONET_TX, tx_port, tx_pin); \
-  HAL_GPIO_PIN(LOCONET_RX, rx_port, rx_pin); \
-  \
-  void loconet_init() \
-  { \
-    /* Set Tx pin as output */ \
-    HAL_GPIO_LOCONET_TX_out(); \
-    HAL_GPIO_LOCONET_TX_pmuxen(PORT_PMUX_PMUXE_C_Val); \
-    /* Set Rx pin as input */ \
-    HAL_GPIO_LOCONET_RX_in(); \
-    HAL_GPIO_LOCONET_RX_pmuxen(PORT_PMUX_PMUXE_C_Val); \
-    /* Enable clock for peripheral, without prescaler */ \
-    PM->APBCMASK.reg |= PM_APBCMASK_SERCOM##sercom; \
-    GCLK->CLKCTRL.reg = \
-      GCLK_CLKCTRL_ID(SERCOM##sercom##_GCLK_ID_CORE) | \
-      GCLK_CLKCTRL_CLKEN | \
-      GCLK_CLKCTRL_GEN(0); \
-    \
-    /* CRTLA register:
-     *   DORD:      0x01  LSB first
-     *   CPOL:      0x00  Tx: rising, Rx: falling
-     *   CMODE:     0x00  Async
-     *   FORM:      0x00  USART Frame (without parity)
-     *   RXPO:      0x03  Rx on PA15
-     *   TXPO:      0x00  Tx on PA14
-     *   IBON:      0x00  Ignored
-     *   RUNSTDBY:  0x00  Ignored
-     *   MODE:      0x01  USART with internal clock
-     *   ENABLE:    0x01  Enabled (set at the end of the init)
-     */ \
-    SERCOM##sercom->USART.CTRLA.reg = \
-      SERCOM_USART_CTRLA_DORD | \
-      SERCOM_USART_CTRLA_MODE_USART_INT_CLK | \
-      SERCOM_USART_CTRLA_RXPO(rx_pad) | \
-      SERCOM_USART_CTRLA_TXPO; \
-    \
-    /* CTRLB register:
-     *   RXEN:      0x01  Enable Rx
-     *   TXEN:      0x01  Enable Tx
-     *   PMODE:     0x00  Ignored, parity is not used
-     *   SFDE:      0x00  Ignored, chip does not go into standby
-     *   SBMODE:    0x00  One stop bit
-     *   CHSIZE:    0x00  Char size: 8 bits
-     */ \
-    SERCOM##sercom->USART.CTRLB.reg = \
-      SERCOM_USART_CTRLB_RXEN | \
-      SERCOM_USART_CTRLB_TXEN | \
-      SERCOM_USART_CTRLB_CHSIZE(0); \
-    \
-    uint64_t br = (uint64_t)65536 * (F_CPU - 16 * 16666) / F_CPU; \
-    SERCOM##sercom->USART.BAUD.reg = (uint16_t)br; \
-    \
-    /* INTERRUPTS register
-     *   RXS:       0x00  No interrupt on Rx start
-     *   RXC:       0x01  Interrupt on Rx complete
-     *   TXC:       0x01  Interrupt on Tx complete
-     *   DRE:       0x00  No interrupt on data registry empty
-     */ \
-    SERCOM##sercom->USART.INTENSET.reg = \
-      SERCOM_USART_INTENSET_RXC | \
-      SERCOM_USART_INTENSET_TXC; \
-    NVIC_EnableIRQ(SERCOM##sercom##_IRQn); \
-    \
-    SERCOM##sercom->USART.CTRLA.reg |= SERCOM_USART_CTRLA_ENABLE; \
-  } \
-  /* Handle received bytes */ \
-  void irq_handler_sercom##sercom(void); \
-  void irq_handler_sercom##sercom(void) \
-  { \
-    /* Rx complete */ \
-    if (SERCOM##sercom->USART.INTFLAG.bit.RXC) { \
-      /* Get data from USART and place it in the ringbuffer */ \
-      loconet_rx_ringbuffer_push(SERCOM##sercom->USART.DATA.reg); \
-    } \
-    \
-    /* Tx complete */ \
-    if (SERCOM##sercom->USART.INTFLAG.bit.TXC) { \
-      /* TODO: Handle TX complete */ \
-    } \
-  } \
+// Give a warning if F_CPU is not 8MHz
+#if F_CPU != 8000000
+#warn "F_CPU is not 8000000, CD and BREAK timer wont work as expected!"
+#endif
 
 //-----------------------------------------------------------------------------
-// Process the loconet rx ringbuffer.
-extern uint8_t process_loconet_rx_ringbuffer(void);
+typedef union {
+  struct {
+    uint16_t ADDRESS:10;
+    uint8_t  MASTER:1;
+    uint8_t  PRIORITY:4;
+    uint8_t  :1;
+  } bit;
+  uint16_t reg;
+} LOCONET_CONFIG_Type;
+
+#define LOCONET_CONFIG_ADDRESS_Pos 0
+#define LOCONET_CONFIG_ADDRESS_Mask (0x3FFul << LOCONET_CONFIG_ADDRESS_Pos)
+#define LOCONET_CONFIG_ADDRESS(value) (LOCONET_CONFIG_ADDRESS_Mask & ((value) << LOCONET_CONFIG_ADDRESS_Pos))
+#define LOCONET_CONFIG_MASTER_Pos 10
+#define LOCONET_CONFIG_MASTER (0x01ul << LOCONET_CONFIG_MASTER_Pos)
+#define LOCONET_CONFIG_PRIORITY_Pos 11
+#define LOCONET_CONFIG_PRIORITY_Mask (0x3FFul << LOCONET_CONFIG_PRIORITY_Pos)
+#define LOCONET_CONFIG_PRIORITY(value) (LOCONET_CONFIG_ADDRESS_Mask & ((value) << LOCONET_CONFIG_PRIORITY_Pos))
+
+extern LOCONET_CONFIG_Type loconet_config;
+
+//-----------------------------------------------------------------------------
+// Initializations
+extern void loconet_init(void);
+extern void loconet_init_usart(Sercom*, uint32_t, uint32_t, uint8_t, uint32_t);
+extern void loconet_init_flank_detection(uint8_t);
+extern void loconet_init_flank_timer(Tc*, uint32_t, uint32_t, uint32_t);
+
+//-----------------------------------------------------------------------------
+// IRQs for flank rise / fall
+extern void loconet_irq_flank_rise(void);
+extern void loconet_irq_flank_fall(void);
+// IRQ for timeout of timer
+extern void loconet_irq_timer(void);
+// IRQ for sercom
+extern void loconet_irq_sercom(void);
+
+extern void loconet_handle_eic(void);
+
+//-----------------------------------------------------------------------------
+// Loconet loop to be used in the main loop
+// Handles processing and sending of messages
+extern void loconet_loop(void);
+
+//-----------------------------------------------------------------------------
+// Enqueue a message
+extern void loconet_tx_queue_0(uint8_t opcode, uint8_t priority);
+extern void loconet_tx_queue_2(uint8_t opcode, uint8_t priority, uint8_t  a, uint8_t b);
+extern void loconet_tx_queue_4(uint8_t opcode, uint8_t priority, uint8_t  a, uint8_t b, uint8_t c, uint8_t d);
+extern void loconet_tx_queue_n(uint8_t opcode, uint8_t priority, uint8_t *d, uint8_t l);
+
+// Macro for loconet_init and irq_handler_sercom<nr>
+#define LOCONET_BUILD(sercom, tx_port, tx_pin, rx_port, rx_pin, rx_pad, fl_port, fl_pin, fl_int, fl_tmr) \
+  HAL_GPIO_PIN(LOCONET_TX, tx_port, tx_pin);                                  \
+  HAL_GPIO_PIN(LOCONET_RX, rx_port, rx_pin);                                  \
+  HAL_GPIO_PIN(LOCONET_FL, fl_port, fl_pin);                                  \
+                                                                              \
+  void loconet_init()                                                         \
+  {                                                                           \
+    /* Set Tx pin as output */                                                \
+    HAL_GPIO_LOCONET_TX_out();                                                \
+    HAL_GPIO_LOCONET_TX_pmuxen(PORT_PMUX_PMUXE_C_Val);                        \
+    HAL_GPIO_LOCONET_TX_clr();                                                \
+    /* Set Rx pin as input */                                                 \
+    HAL_GPIO_LOCONET_RX_in();                                                 \
+    HAL_GPIO_LOCONET_RX_pmuxen(PORT_PMUX_PMUXE_C_Val);                        \
+    /* Set Fl pin as input */                                                 \
+    HAL_GPIO_LOCONET_FL_in();                                                 \
+    HAL_GPIO_LOCONET_FL_pullup();                                             \
+    HAL_GPIO_LOCONET_FL_pmuxen(PORT_PMUX_PMUXE_A_Val);                        \
+    /* Initialize usart */                                                    \
+    loconet_init_usart(                                                       \
+      SERCOM##sercom,                                                         \
+      PM_APBCMASK_SERCOM##sercom,                                             \
+      SERCOM##sercom##_GCLK_ID_CORE,                                          \
+      rx_pad,                                                                 \
+      SERCOM##sercom##_IRQn                                                   \
+    );                                                                        \
+    /* Initialize flank detection */                                          \
+    loconet_init_flank_detection(                                             \
+      fl_int                                                                  \
+    );                                                                        \
+    /* Initialize flank timer */                                              \
+    loconet_init_flank_timer(                                                 \
+      TC##fl_tmr,                                                             \
+      PM_APBCMASK_TC##fl_tmr,                                                 \
+      TC##fl_tmr##_GCLK_ID,                                                   \
+      TC##fl_tmr##_IRQn                                                       \
+    );                                                                        \
+  }                                                                           \
+  void loconet_handle_eic(void) {                                             \
+    /* Return if it's not our external pin to watch */                        \
+    if (!EIC->INTFLAG.bit.EXTINT##fl_int) {                                   \
+      return;                                                                 \
+    }                                                                         \
+    /* Determine RISE / FALL */                                               \
+    if (HAL_GPIO_LOCONET_FL_read()) {                                         \
+      loconet_irq_flank_rise();                                               \
+    } else {                                                                  \
+      loconet_irq_flank_fall();                                               \
+    }                                                                         \
+    /* Reset flag */                                                          \
+    EIC->INTFLAG.reg |= EIC_INTFLAG_EXTINT##fl_int;                           \
+  }                                                                           \
+  /* Handle timer interrupt */                                                \
+  void irq_handler_tc##fl_tmr(void);                                          \
+  void irq_handler_tc##fl_tmr(void) {                                         \
+    /* Disable timer */                                                       \
+    TC##fl_tmr->COUNT16.CTRLA.bit.ENABLE = 0;                                 \
+    /* Reset clock interrupt flag */                                          \
+    TC##fl_tmr->COUNT16.INTFLAG.reg = TC_INTFLAG_MC(1);                       \
+    /* Handle loconet timer */                                                \
+    loconet_irq_timer();                                                      \
+  }                                                                           \
+  /* Handle received bytes */                                                 \
+  void irq_handler_sercom##sercom(void);                                      \
+  void irq_handler_sercom##sercom(void)                                       \
+  {                                                                           \
+    loconet_irq_sercom();                                                     \
+  }                                                                           \
 
 #endif // _LOCONET_LOCONET_H_
