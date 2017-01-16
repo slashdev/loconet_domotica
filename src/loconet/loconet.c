@@ -674,11 +674,54 @@ void ln_handler_dummy_n(uint8_t *d, uint8_t l)
 }
 
 //-----------------------------------------------------------------------------
+// Start transmitting bytes
+static void loconet_tx_start(void)
+{
+  // Set data in register
+  loconet_sercom->USART.DATA.reg = loconet_tx_current->data[0];
+  // Enable Data Register Empty interrupt
+  loconet_sercom->USART.INTENSET.reg = SERCOM_USART_INTENSET_DRE;
+  // Increment of tx index
+  loconet_tx_current->tx_index++;
+}
+
+//-----------------------------------------------------------------------------
+static uint8_t loconet_tx_process(void)
+{
+  // Can we start transmission?
+  if (!loconet_tx_queue) {
+    // No message is in the queue
+    return 0;
+  } else if (!loconet_status.bit.IDLE) {
+    // We're not allowed to transmit, don't try to
+    return 0;
+  } else if (loconet_status.bit.TRANSMIT) {
+    // Do not start transmission if we're already sending
+    return 0;
+  }
+
+  // We have a queue, loconet is idle, so we can start sending
+  loconet_status.reg |= LOCONET_STATUS_TRANSMIT;
+
+  // Set which bytes need to be send
+  loconet_tx_current = loconet_tx_queue;
+  loconet_tx_queue = loconet_tx_current->next;
+  loconet_tx_current->next = 0;
+
+  // Start sending
+  loconet_tx_start();
+
+  return 0;
+}
+
+//-----------------------------------------------------------------------------
 // Should be included in the main loop to keep loconet going.
 void loconet_loop(void)
 {
   // If a message is received and handled, keep processing new messages
   while(loconet_rx_process());
+  // If a message is sent, keep sending messages
+  while(loconet_tx_process());
 }
 
 //-----------------------------------------------------------------------------
