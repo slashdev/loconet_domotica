@@ -304,6 +304,19 @@ void loconet_irq_sercom(void)
     // Clear transmit state and free memory
     loconet_tx_stop();
   }
+
+  // Data register empty (TX)
+  if (loconet_sercom->USART.INTFLAG.bit.DRE && loconet_status.bit.TRANSMIT) {
+    // Do we have another byte to send?
+    if (loconet_tx_current->tx_index < loconet_tx_current->data_length) {
+      loconet_sercom->USART.DATA.reg = loconet_tx_current->data[loconet_tx_current->tx_index];
+      loconet_tx_current->tx_index++;
+    } else {
+      loconet_status.bit.TRANSMIT = 0;
+      // Disable Data Register Empty interrupt
+      loconet_sercom->USART.INTENCLR.reg = SERCOM_USART_INTENCLR_DRE;
+    }
+  }
 }
 
 //-----------------------------------------------------------------------------
