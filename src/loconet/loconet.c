@@ -679,6 +679,12 @@ static LOCONET_MESSAGE_Type *loconet_build_message(uint8_t length)
 // Calculate the checksum of a message
 static uint8_t loconet_tx_calc_checksum(uint8_t *data, uint8_t length)
 {
+  uint8_t checksum = 0xFF;
+  while (length--) {
+    // Dereference data pointer, XOR it with checksum and advance pointer by 1
+    checksum ^= *data++;
+  }
+  return checksum;
 }
 
 //-----------------------------------------------------------------------------
