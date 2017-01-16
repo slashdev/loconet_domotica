@@ -677,7 +677,7 @@ static LOCONET_MESSAGE_Type *loconet_build_message(uint8_t length)
 
 //-----------------------------------------------------------------------------
 // Calculate the checksum of a message
-static uint8_t loconet_tx_calc_checksum(uint8_t *data, uint8_t length)
+static uint8_t loconet_calc_checksum(uint8_t *data, uint8_t length)
 {
   uint8_t checksum = 0xFF;
   while (length--) {
@@ -693,7 +693,7 @@ void loconet_tx_queue_0(uint8_t opcode, uint8_t priority)
   LOCONET_MESSAGE_Type *message = loconet_build_message(2);
   // Fill message
   message->data[0] = opcode;
-  message->data[1] = loconet_tx_calc_checksum(message->data, 1);
+  message->data[1] = loconet_calc_checksum(message->data, 1);
   // Enqueue message
   loconet_tx_enqueue(message);
 }
@@ -707,7 +707,7 @@ void loconet_tx_queue_2(uint8_t opcode, uint8_t priority, uint8_t  a, uint8_t b)
   message->data[0] = opcode;
   message->data[1] = a;
   message->data[2] = b;
-  message->data[3] = loconet_tx_calc_checksum(message->data, 3);
+  message->data[3] = loconet_calc_checksum(message->data, 3);
   // Enqueue message
   loconet_tx_enqueue(message);
 }
@@ -723,7 +723,7 @@ void loconet_tx_queue_4(uint8_t opcode, uint8_t priority, uint8_t  a, uint8_t b,
   message->data[2] = b;
   message->data[3] = c;
   message->data[4] = d;
-  message->data[5] = loconet_tx_calc_checksum(message->data, 5);
+  message->data[5] = loconet_calc_checksum(message->data, 5);
   // Enqueue message
   loconet_tx_enqueue(message);
 }
@@ -736,7 +736,7 @@ void loconet_tx_queue_n(uint8_t opcode, uint8_t priority, uint8_t *data, uint8_t
   // Fill message
   message->data[0] = opcode;
   for(uint8_t idx = 0; idx < length; message->data[idx+1] = data[idx], idx++);
-  message->data[length+1] = loconet_tx_calc_checksum(message->data, length + 1);
+  message->data[length+1] = loconet_calc_checksum(message->data, length + 1);
   // Enqueue message
   loconet_tx_enqueue(message);
 }
