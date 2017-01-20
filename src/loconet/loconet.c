@@ -544,6 +544,18 @@ static void ln_handler_wr_sl_data_(uint8_t *data, uint8_t length) {
 }
 
 //-----------------------------------------------------------------------------
+// Calculate the checksum of a message
+static uint8_t loconet_calc_checksum(uint8_t *data, uint8_t length)
+{
+  uint8_t checksum = 0xFF;
+  while (length--) {
+    // Dereference data pointer, XOR it with checksum and advance pointer by 1
+    checksum ^= *data++;
+  }
+  return checksum;
+}
+
+//-----------------------------------------------------------------------------
 typedef union {
   struct {
     uint8_t NUMBER:5;
@@ -610,16 +622,13 @@ static uint8_t loconet_rx_process(void)
   // Get bytes for passing (and build checksum)
   uint8_t data[message_size - 2];
   uint8_t start = reader + 1;
-  uint8_t checksum = opcode.byte;
 
   for (uint8_t index = 0; index < message_size - 2; index++) {
     data[index] = buffer[(start + index) % LOCONET_RX_RINGBUFFER_Size];
-    checksum ^= data[index];
   }
 
   // Verify checksum (skip message if failed)
-  checksum ^= buffer[(start + message_size - 2) % LOCONET_RX_RINGBUFFER_Size];
-  if (checksum != 0xFF) {
+  if (loconet_calc_checksum(data, message_size)) {
     loconet_rx_ringbuffer.reader = (reader + message_size) % LOCONET_RX_RINGBUFFER_Size;
     return 0;
   }
@@ -772,18 +781,6 @@ static LOCONET_MESSAGE_Type *loconet_build_message(uint8_t length)
   message->data_length = length;
   // Return the new message
   return message;
-}
-
-//-----------------------------------------------------------------------------
-// Calculate the checksum of a message
-static uint8_t loconet_calc_checksum(uint8_t *data, uint8_t length)
-{
-  uint8_t checksum = 0xFF;
-  while (length--) {
-    // Dereference data pointer, XOR it with checksum and advance pointer by 1
-    checksum ^= *data++;
-  }
-  return checksum;
 }
 
 //-----------------------------------------------------------------------------
