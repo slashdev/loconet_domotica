@@ -672,6 +672,15 @@ static uint8_t loconet_rx_process(void)
       break;
   }
 
+  // Check if the buffer contains no new opcodes (could happen due to colissions)
+  uint8_t index_of_writer_or_eom = writer < (reader + message_size) ? writer : reader + message_size;
+  for (uint8_t index = reader + 1; index < index_of_writer_or_eom; index++) {
+    if (buffer[index % LOCONET_RX_RINGBUFFER_Size] & LOCONET_OPCODE_FLAG) {
+      loconet_rx_ringbuffer.reader = index % LOCONET_RX_RINGBUFFER_Size;
+      return 1; // Read the new message right away
+    }
+  }
+
   // Check if we have all the bytes for this message
   if (writer < reader + message_size) {
     return 0;
