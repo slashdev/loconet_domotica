@@ -18,6 +18,8 @@ void loconet_tx_stop(void);
 // Peripherals to use for communication
 Sercom *loconet_sercom;
 Tc *loconet_flank_timer;
+PortGroup *loconet_tx_port;
+uint32_t loconet_tx_pin;
 
 //-----------------------------------------------------------------------------
 // Global variables
@@ -158,6 +160,14 @@ void loconet_init_flank_timer(Tc *timer, uint32_t pm_tmr_mask, uint32_t gclock_t
 }
 
 //-----------------------------------------------------------------------------
+// Save which pin is connected to TX
+void loconet_save_tx_pin(PortGroup *group, uint32_t pin)
+{
+  loconet_tx_port = group;
+  loconet_tx_pin = (0x01ul << pin);
+}
+
+//-----------------------------------------------------------------------------
 // Define LOCONET_RX_RINGBUFFER_Size if it's not defined
 #ifndef LOCONET_RX_RINGBUFFER_Size
 #define LOCONET_RX_RINGBUFFER_Size 64
@@ -287,6 +297,8 @@ void loconet_irq_timer(void) {
   } else if (loconet_timer_status.bit.LINE_BREAK) {
     // Remove collision detected flag
     loconet_status.bit.COLLISION_DETECTED = 0;
+    // Release TX pin
+    loconet_tx_port->OUTCLR.reg |= loconet_tx_pin;
     // Enable receiving and sending
     loconet_sercom->USART.CTRLB.reg |= SERCOM_USART_CTRLB_RXEN | SERCOM_USART_CTRLB_TXEN;
   }
@@ -299,6 +311,13 @@ static void loconet_irq_collision(void)
   // Stop receiving and sending
   loconet_sercom->USART.CTRLB.bit.RXEN = 0;
   loconet_sercom->USART.CTRLB.bit.TXEN = 0;
+  // If we were transmitting, enforce line break
+  if (loconet_status.bit.TRANSMIT) {
+    // Disable TRANSMIT
+    loconet_status.bit.TRANSMIT = 0;
+    // Pull Tx pin low
+    loconet_tx_port->OUTSET.reg |= loconet_tx_pin;
+  }
 }
 
 //-----------------------------------------------------------------------------
