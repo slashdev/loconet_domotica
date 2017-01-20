@@ -40,49 +40,49 @@ void loconet_rx_buffer_push(uint8_t byte)
 }
 
 //-----------------------------------------------------------------------------
-#define LN_DUMMY_0(name) \
+#define LOCONET_RX_DUMMY_0(name) \
   __attribute__ ((weak, alias ("loconet_rx_dummy_0"))) \
   void loconet_rx_##name(void)
-#define LN_DUMMY_2(name) \
+#define LOCONET_RX_DUMMY_2(name) \
   __attribute__ ((weak, alias ("loconet_rx_dummy_2"))) \
   void loconet_rx_##name(uint8_t, uint8_t)
-#define LN_DUMMY_4(name) \
+#define LOCONET_RX_DUMMY_4(name) \
   __attribute__ ((weak, alias ("loconet_rx_dummy_4"))) \
   void loconet_rx_##name(uint8_t, uint8_t, uint8_t, uint8_t)
-#define LN_DUMMY_N(name) \
+#define LOCONET_RX_DUMMY_N(name) \
   __attribute__ ((weak, alias ("loconet_rx_dummy_n"))) \
   void loconet_rx_##name(uint8_t*, uint8_t)
 
 //-----------------------------------------------------------------------------
-LN_DUMMY_0(busy);
-LN_DUMMY_0(gpoff);
-LN_DUMMY_0(gpon);
-LN_DUMMY_0(idle);
+LOCONET_RX_DUMMY_0(busy);
+LOCONET_RX_DUMMY_0(gpoff);
+LOCONET_RX_DUMMY_0(gpon);
+LOCONET_RX_DUMMY_0(idle);
 
 //-----------------------------------------------------------------------------
-LN_DUMMY_2(loco_spd);
-LN_DUMMY_2(loco_dirf);
-LN_DUMMY_2(loco_snd);
-LN_DUMMY_2(sq_req);
-LN_DUMMY_2(sw_rep);
-LN_DUMMY_2(input_rep);
-LN_DUMMY_2(long_ack);
-LN_DUMMY_2(slot_stat1);
-LN_DUMMY_2(consist_func);
-LN_DUMMY_2(unlink_slots);
-LN_DUMMY_2(link_slots);
-LN_DUMMY_2(move_slots);
-LN_DUMMY_2(rq_sl_data);
-LN_DUMMY_2(sw_state);
-LN_DUMMY_2(sw_ack);
-LN_DUMMY_2(loco_adr);
+LOCONET_RX_DUMMY_2(loco_spd);
+LOCONET_RX_DUMMY_2(loco_dirf);
+LOCONET_RX_DUMMY_2(loco_snd);
+LOCONET_RX_DUMMY_2(sq_req);
+LOCONET_RX_DUMMY_2(sw_rep);
+LOCONET_RX_DUMMY_2(input_rep);
+LOCONET_RX_DUMMY_2(long_ack);
+LOCONET_RX_DUMMY_2(slot_stat1);
+LOCONET_RX_DUMMY_2(consist_func);
+LOCONET_RX_DUMMY_2(unlink_slots);
+LOCONET_RX_DUMMY_2(link_slots);
+LOCONET_RX_DUMMY_2(move_slots);
+LOCONET_RX_DUMMY_2(rq_sl_data);
+LOCONET_RX_DUMMY_2(sw_state);
+LOCONET_RX_DUMMY_2(sw_ack);
+LOCONET_RX_DUMMY_2(loco_adr);
 
 //-----------------------------------------------------------------------------
-LN_DUMMY_N(wr_sl_data);
-LN_DUMMY_N(rd_sl_data);
-LN_DUMMY_N(prog_task_start);
-LN_DUMMY_N(prog_task_final);
-LN_DUMMY_N(fast_clock);
+LOCONET_RX_DUMMY_N(wr_sl_data);
+LOCONET_RX_DUMMY_N(rd_sl_data);
+LOCONET_RX_DUMMY_N(prog_task_start);
+LOCONET_RX_DUMMY_N(prog_task_final);
+LOCONET_RX_DUMMY_N(fast_clock);
 
 //-----------------------------------------------------------------------------
 // Special handlers which cannot be overriden
