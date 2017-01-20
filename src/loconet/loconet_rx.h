@@ -1,5 +1,5 @@
 /**
- * @file loconet.h
+ * @file loconet_rx.h
  * @brief Process received Loconet messages
  *
  * \copyright Copyright 2017 /Dev. All rights reserved.

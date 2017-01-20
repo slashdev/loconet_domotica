@@ -1,3 +1,13 @@
+/**
+ * @file loconet_rx.c
+ * @brief Process received Loconet messages
+ *
+ * \copyright Copyright 2017 /Dev. All rights reserved.
+ * \license This project is released under MIT license.
+ *
+ * @author Ferdi van der Werf <ferdi@slashdev.nl>
+ * @author Jan Martijn van der Werf <janmartijn@slashdev.nl>
+ */
 
 #include "loconet_rx.h"
 
