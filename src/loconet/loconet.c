@@ -364,15 +364,25 @@ void loconet_irq_sercom(void)
   }
 
   // Data register empty (TX)
-  if (loconet_sercom->USART.INTFLAG.bit.DRE && loconet_status.bit.TRANSMIT) {
-    // Do we have another byte to send?
-    if (loconet_tx_current->tx_index < loconet_tx_current->data_length) {
-      loconet_sercom->USART.DATA.reg = loconet_tx_current->data[loconet_tx_current->tx_index];
-      loconet_tx_current->tx_index++;
-    } else {
+  if (loconet_sercom->USART.INTFLAG.bit.DRE) {
+    // Is a collision detected? Or is our message gone AWOL (due to a collision)?
+    // If so: do not attempt to buffer bytes to send
+    if (loconet_status.bit.COLLISION_DETECTED || !loconet_tx_current) {
+      // Disable TRANSMIT
       loconet_status.bit.TRANSMIT = 0;
       // Disable Data Register Empty interrupt
       loconet_sercom->USART.INTENCLR.reg = SERCOM_USART_INTENCLR_DRE;
+    } else if (loconet_status.bit.TRANSMIT) {
+      // Do we have a message and do we have another byte to send?
+      if (loconet_tx_current && loconet_tx_current->tx_index < loconet_tx_current->data_length) {
+        loconet_sercom->USART.DATA.reg = loconet_tx_current->data[loconet_tx_current->tx_index];
+        loconet_tx_current->tx_index++;
+      } else {
+        // Disable TRANSMIT
+        loconet_status.bit.TRANSMIT = 0;
+        // Disable Data Register Empty interrupt
+        loconet_sercom->USART.INTENCLR.reg = SERCOM_USART_INTENCLR_DRE;
+      }
     }
   }
 }
