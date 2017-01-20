@@ -300,7 +300,12 @@ void loconet_irq_sercom(void)
 {
   // Rx complete
   if (loconet_sercom->USART.INTFLAG.bit.RXC) {
-    if (loconet_status.bit.TRANSMIT) {
+    if (loconet_status.bit.COLLISION_DETECTED) {
+      // Ignore byte
+      loconet_sercom->USART.DATA.reg;
+      // Make sure Framing error status is cleared
+      loconet_sercom->USART.STATUS.reg |= SERCOM_USART_STATUS_FERR;
+    } else if (loconet_status.bit.TRANSMIT) {
       // Read own bytes to see if we have a collision
       uint8_t data = loconet_sercom->USART.DATA.reg;
       if (loconet_tx_current && data != loconet_tx_current->data[loconet_tx_current->rx_index++]) {
