@@ -99,6 +99,26 @@ typedef union {
 extern LOCONET_CONFIG_Type loconet_config;
 
 //-----------------------------------------------------------------------------
+typedef union {
+  struct {
+    uint8_t IDLE:1;
+    uint8_t TRANSMIT:1;
+    uint8_t COLLISION_DETECTED:1;
+    uint8_t :5;
+  } bit;
+  uint8_t reg;
+} LOCONET_STATUS_Type;
+
+#define LOCONET_STATUS_IDLE_Pos 0
+#define LOCONET_STATUS_IDLE (0x01ul << LOCONET_STATUS_IDLE_Pos)
+#define LOCONET_STATUS_TRANSMIT_Pos 1
+#define LOCONET_STATUS_TRANSMIT (0x01ul << LOCONET_STATUS_TRANSMIT_Pos)
+#define LOCONET_STATUS_COLLISION_DETECT_Pos 2
+#define LOCONET_STATUS_COLLISION_DETECT (0x01ul << LOCONET_STATUS_COLLISION_DETECT_Pos)
+
+extern LOCONET_STATUS_Type loconet_status;
+
+//-----------------------------------------------------------------------------
 // Initializations
 extern void loconet_init(void);
 extern void loconet_init_usart(Sercom*, uint32_t, uint32_t, uint8_t, uint32_t);

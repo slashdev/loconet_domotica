@@ -24,6 +24,7 @@ uint32_t loconet_tx_pin;
 //-----------------------------------------------------------------------------
 // Global variables
 LOCONET_CONFIG_Type loconet_config = { 0 };
+LOCONET_STATUS_Type loconet_status = { 0 };
 
 //-----------------------------------------------------------------------------
 // Loconet message/linked list definition
@@ -166,26 +167,6 @@ void loconet_save_tx_pin(PortGroup *group, uint32_t pin)
   loconet_tx_port = group;
   loconet_tx_pin = (0x01ul << pin);
 }
-
-//-----------------------------------------------------------------------------
-typedef union {
-  struct {
-    uint8_t IDLE:1;
-    uint8_t TRANSMIT:1;
-    uint8_t COLLISION_DETECTED:1;
-    uint8_t :5;
-  } bit;
-  uint8_t reg;
-} LOCONET_STATUS_Type;
-
-#define LOCONET_STATUS_IDLE_Pos 0
-#define LOCONET_STATUS_IDLE (0x01ul << LOCONET_STATUS_IDLE_Pos)
-#define LOCONET_STATUS_TRANSMIT_Pos 1
-#define LOCONET_STATUS_TRANSMIT (0x01ul << LOCONET_STATUS_TRANSMIT_Pos)
-#define LOCONET_STATUS_COLLISION_DETECT_Pos 2
-#define LOCONET_STATUS_COLLISION_DETECT (0x01ul << LOCONET_STATUS_COLLISION_DETECT_Pos)
-
-static LOCONET_STATUS_Type loconet_status = { 0 };
 
 //-----------------------------------------------------------------------------
 typedef union {
