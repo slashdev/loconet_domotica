@@ -381,15 +381,10 @@ void loconet_tx_stop(void)
 }
 
 //-----------------------------------------------------------------------------
-// Start transmitting bytes
-static void loconet_tx_start(void)
+// Enable data register empty interrupt so we can send data
+static void loconet_sercom_enable_dre_irq(void)
 {
-  // Set data in register
-  loconet_sercom->USART.DATA.reg = loconet_tx_current->data[0];
-  // Enable Data Register Empty interrupt
   loconet_sercom->USART.INTENSET.reg = SERCOM_USART_INTENSET_DRE;
-  // Increment of tx index
-  loconet_tx_current->tx_index++;
 }
 
 //-----------------------------------------------------------------------------
@@ -418,7 +413,7 @@ static void loconet_tx_process(void)
   loconet_tx_current->next = 0;
 
   // Start sending
-  loconet_tx_start();
+  loconet_sercom_enable_dre_irq();
 
   return;
 }
