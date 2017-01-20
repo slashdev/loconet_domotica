@@ -320,7 +320,7 @@ void loconet_irq_sercom(void)
       }
     } else {
       // Get data from USART and place it in the ringbuffer
-      loconet_rx_ringbuffer_push(loconet_sercom->USART.DATA.reg);
+      loconet_rx_buffer_push(loconet_sercom->USART.DATA.reg);
     }
   }
 

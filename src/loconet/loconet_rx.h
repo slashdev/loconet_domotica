@@ -18,6 +18,6 @@
 #include "loconet.h"
 
 extern uint8_t loconet_rx_process(void);
-extern void loconet_rx_ringbuffer_push(uint8_t);
+extern void loconet_rx_buffer_push(uint8_t);
 
 #endif // _LOCONET_LOCONET_RX_H_

@@ -23,7 +23,7 @@ typedef struct {
 static LOCONET_RX_RINGBUFFER_Type loconet_rx_ringbuffer = { { 0 }, 0, 0};
 
 //-----------------------------------------------------------------------------
-void loconet_rx_ringbuffer_push(uint8_t byte)
+void loconet_rx_buffer_push(uint8_t byte)
 {
   // Get index + 1 of buffer head
   uint8_t index = (loconet_rx_ringbuffer.writer + 1) % LOCONET_RX_RINGBUFFER_Size;
