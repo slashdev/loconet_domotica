@@ -290,6 +290,8 @@ void loconet_irq_timer(void) {
 
 static void loconet_irq_collision(void)
 {
+  // Set collision detected flag
+  loconet_status.bit.COLLISION_DETECTED = 1;
 }
 
 //-----------------------------------------------------------------------------

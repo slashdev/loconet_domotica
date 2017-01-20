@@ -170,14 +170,14 @@ extern void loconet_tx_queue_n(uint8_t opcode, uint8_t priority, uint8_t *d, uin
     if (!EIC->INTFLAG.bit.EXTINT##fl_int) {                                   \
       return;                                                                 \
     }                                                                         \
+    /* Reset flag */                                                          \
+    EIC->INTFLAG.reg |= EIC_INTFLAG_EXTINT##fl_int;                           \
     /* Determine RISE / FALL */                                               \
     if (HAL_GPIO_LOCONET_FL_read()) {                                         \
       loconet_irq_flank_rise();                                               \
     } else {                                                                  \
       loconet_irq_flank_fall();                                               \
     }                                                                         \
-    /* Reset flag */                                                          \
-    EIC->INTFLAG.reg |= EIC_INTFLAG_EXTINT##fl_int;                           \
   }                                                                           \
   /* Handle timer interrupt */                                                \
   void irq_handler_tc##fl_tmr(void);                                          \
