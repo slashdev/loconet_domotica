@@ -34,6 +34,7 @@ typedef struct MESSAGE {
   uint8_t data_length;
   // Current index we're sending
   uint8_t tx_index;
+  uint8_t rx_index;
 } LOCONET_MESSAGE_Type;
 
 static LOCONET_MESSAGE_Type *loconet_tx_queue = 0;
@@ -287,14 +288,26 @@ void loconet_irq_timer(void) {
   }
 }
 
+static void loconet_irq_collision(void)
+{
+}
+
 //-----------------------------------------------------------------------------
 // Handle sercom (usart) interrupt
 void loconet_irq_sercom(void)
 {
   // Rx complete
   if (loconet_sercom->USART.INTFLAG.bit.RXC) {
-    // Get data from USART and place it in the ringbuffer
-    loconet_rx_ringbuffer_push(loconet_sercom->USART.DATA.reg);
+    if (loconet_status.bit.TRANSMIT) {
+      // Read own bytes to see if we have a collision
+      uint8_t data = loconet_sercom->USART.DATA.reg;
+      if (loconet_tx_current && data != loconet_tx_current->data[loconet_tx_current->rx_index++]) {
+        loconet_irq_collision();
+      }
+    } else {
+      // Get data from USART and place it in the ringbuffer
+      loconet_rx_ringbuffer_push(loconet_sercom->USART.DATA.reg);
+    }
   }
 
   // Tx complete
