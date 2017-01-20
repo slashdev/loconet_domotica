@@ -697,11 +697,12 @@ static uint8_t loconet_rx_process(void)
   }
 
   // Get bytes for passing (and build checksum)
-  uint8_t data[message_size - 2];
-  uint8_t start = reader + 1;
+  uint8_t data[message_size];
+  uint8_t *p_data = data;
+  uint8_t eom_index = reader + message_size;
 
-  for (uint8_t index = 0; index < message_size - 2; index++) {
-    data[index] = buffer[(start + index) % LOCONET_RX_RINGBUFFER_Size];
+  for (uint8_t index = reader; index < eom_index; index++) {
+    *p_data++ = buffer[index % LOCONET_RX_RINGBUFFER_Size];
   }
 
   // Verify checksum (skip message if failed)
@@ -716,13 +717,13 @@ static uint8_t loconet_rx_process(void)
       (*ln_messages_0[opcode.bits.NUMBER])();
       break;
     case 0x05: // Length 2
-      (*ln_messages_2[opcode.bits.NUMBER])(data[0], data[1]);
+      (*ln_messages_2[opcode.bits.NUMBER])(data[1], data[2]);
       break;
     case 0x06: // Length 4
-      (*ln_messages_4[opcode.bits.NUMBER])(data[0], data[1], data[2], data[3]);
+      (*ln_messages_4[opcode.bits.NUMBER])(data[1], data[2], data[3], data[4]);
       break;
     case 0x07: // Variable length
-      (*ln_messages_n[opcode.bits.NUMBER])(&data[1], message_size - 3);
+      (*ln_messages_n[opcode.bits.NUMBER])(&data[2], message_size - 3);
       break;
   }
 
