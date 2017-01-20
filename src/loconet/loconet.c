@@ -260,7 +260,6 @@ void loconet_irq_flank_fall(void) {
   loconet_timer_status.reg = LOCONET_TIMER_STATUS_LINE_BREAK;
   // If flank changes, loconet is not idle anymore
   loconet_status.bit.IDLE = 0;
-  // TODO: BREAK DETECT
 }
 
 //-----------------------------------------------------------------------------
@@ -285,6 +284,11 @@ void loconet_irq_timer(void) {
     }
   } else if (loconet_timer_status.bit.PRIORITY_DELAY) {
     loconet_status.reg |= LOCONET_STATUS_IDLE;
+  } else if (loconet_timer_status.bit.LINE_BREAK) {
+    // Remove collision detected flag
+    loconet_status.bit.COLLISION_DETECTED = 0;
+    // Enable receiving and sending
+    loconet_sercom->USART.CTRLB.reg |= SERCOM_USART_CTRLB_RXEN | SERCOM_USART_CTRLB_TXEN;
   }
 }
 
@@ -292,6 +296,9 @@ static void loconet_irq_collision(void)
 {
   // Set collision detected flag
   loconet_status.bit.COLLISION_DETECTED = 1;
+  // Stop receiving and sending
+  loconet_sercom->USART.CTRLB.bit.RXEN = 0;
+  loconet_sercom->USART.CTRLB.bit.TXEN = 0;
 }
 
 //-----------------------------------------------------------------------------
