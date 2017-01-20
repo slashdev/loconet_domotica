@@ -67,6 +67,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "samd20.h"
+#include "hal_gpio.h"
 
 //-----------------------------------------------------------------------------
 // Give a warning if F_CPU is not 8MHz
