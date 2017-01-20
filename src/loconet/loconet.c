@@ -388,24 +388,24 @@ void loconet_irq_sercom(void)
 }
 
 //-----------------------------------------------------------------------------
-void ln_handler_dummy_0(void);
-void ln_handler_dummy_2(uint8_t, uint8_t);
-void ln_handler_dummy_4(uint8_t, uint8_t, uint8_t, uint8_t);
-void ln_handler_dummy_n(uint8_t*, uint8_t);
+void loconet_rx_dummy_0(void);
+void loconet_rx_dummy_2(uint8_t, uint8_t);
+void loconet_rx_dummy_4(uint8_t, uint8_t, uint8_t, uint8_t);
+void loconet_rx_dummy_n(uint8_t*, uint8_t);
 
 //-----------------------------------------------------------------------------
 #define LN_DUMMY_0(name) \
-  __attribute__ ((weak, alias ("ln_handler_dummy_0"))) \
-  void ln_handler_##name(void)
+  __attribute__ ((weak, alias ("loconet_rx_dummy_0"))) \
+  void loconet_rx_##name(void)
 #define LN_DUMMY_2(name) \
-  __attribute__ ((weak, alias ("ln_handler_dummy_2"))) \
-  void ln_handler_##name(uint8_t, uint8_t)
+  __attribute__ ((weak, alias ("loconet_rx_dummy_2"))) \
+  void loconet_rx_##name(uint8_t, uint8_t)
 #define LN_DUMMY_4(name) \
-  __attribute__ ((weak, alias ("ln_handler_dummy_4"))) \
-  void ln_handler_##name(uint8_t, uint8_t, uint8_t, uint8_t)
+  __attribute__ ((weak, alias ("loconet_rx_dummy_4"))) \
+  void loconet_rx_##name(uint8_t, uint8_t, uint8_t, uint8_t)
 #define LN_DUMMY_N(name) \
-  __attribute__ ((weak, alias ("ln_handler_dummy_n"))) \
-  void ln_handler_##name(uint8_t*, uint8_t)
+  __attribute__ ((weak, alias ("loconet_rx_dummy_n"))) \
+  void loconet_rx_##name(uint8_t*, uint8_t)
 
 //-----------------------------------------------------------------------------
 LN_DUMMY_0(busy);
@@ -440,174 +440,174 @@ LN_DUMMY_N(fast_clock);
 
 //-----------------------------------------------------------------------------
 // Special handlers which cannot be overriden
-static void ln_handler_wr_sl_data_(uint8_t*, uint8_t);
-static void ln_handler_rd_sl_data_(uint8_t*, uint8_t);
+static void loconet_rx_wr_sl_data_(uint8_t*, uint8_t);
+static void loconet_rx_rd_sl_data_(uint8_t*, uint8_t);
 
 //-----------------------------------------------------------------------------
 void (* const ln_messages_0[32])(void) = {
-  ln_handler_dummy_0,     // 0x80
-  ln_handler_busy,        // 0x81
-  ln_handler_gpoff,       // 0x82
-  ln_handler_gpon,        // 0x83
-  ln_handler_dummy_0,     // 0x84
-  ln_handler_idle,        // 0x85
-  ln_handler_dummy_0,     // 0x86
-  ln_handler_dummy_0,     // 0x87
-  ln_handler_dummy_0,     // 0x88
-  ln_handler_dummy_0,     // 0x89
-  ln_handler_dummy_0,     // 0x8A
-  ln_handler_dummy_0,     // 0x8B
-  ln_handler_dummy_0,     // 0x8C
-  ln_handler_dummy_0,     // 0x8D
-  ln_handler_dummy_0,     // 0x8E
-  ln_handler_dummy_0,     // 0x8F
-  ln_handler_dummy_0,     // 0x90
-  ln_handler_dummy_0,     // 0x91
-  ln_handler_dummy_0,     // 0x92
-  ln_handler_dummy_0,     // 0x93
-  ln_handler_dummy_0,     // 0x94
-  ln_handler_dummy_0,     // 0x95
-  ln_handler_dummy_0,     // 0x96
-  ln_handler_dummy_0,     // 0x97
-  ln_handler_dummy_0,     // 0x98
-  ln_handler_dummy_0,     // 0x99
-  ln_handler_dummy_0,     // 0x9A
-  ln_handler_dummy_0,     // 0x9B
-  ln_handler_dummy_0,     // 0x9C
-  ln_handler_dummy_0,     // 0x9D
-  ln_handler_dummy_0,     // 0x9E
-  ln_handler_dummy_0,     // 0x9F
+  loconet_rx_dummy_0,     // 0x80
+  loconet_rx_busy,        // 0x81
+  loconet_rx_gpoff,       // 0x82
+  loconet_rx_gpon,        // 0x83
+  loconet_rx_dummy_0,     // 0x84
+  loconet_rx_idle,        // 0x85
+  loconet_rx_dummy_0,     // 0x86
+  loconet_rx_dummy_0,     // 0x87
+  loconet_rx_dummy_0,     // 0x88
+  loconet_rx_dummy_0,     // 0x89
+  loconet_rx_dummy_0,     // 0x8A
+  loconet_rx_dummy_0,     // 0x8B
+  loconet_rx_dummy_0,     // 0x8C
+  loconet_rx_dummy_0,     // 0x8D
+  loconet_rx_dummy_0,     // 0x8E
+  loconet_rx_dummy_0,     // 0x8F
+  loconet_rx_dummy_0,     // 0x90
+  loconet_rx_dummy_0,     // 0x91
+  loconet_rx_dummy_0,     // 0x92
+  loconet_rx_dummy_0,     // 0x93
+  loconet_rx_dummy_0,     // 0x94
+  loconet_rx_dummy_0,     // 0x95
+  loconet_rx_dummy_0,     // 0x96
+  loconet_rx_dummy_0,     // 0x97
+  loconet_rx_dummy_0,     // 0x98
+  loconet_rx_dummy_0,     // 0x99
+  loconet_rx_dummy_0,     // 0x9A
+  loconet_rx_dummy_0,     // 0x9B
+  loconet_rx_dummy_0,     // 0x9C
+  loconet_rx_dummy_0,     // 0x9D
+  loconet_rx_dummy_0,     // 0x9E
+  loconet_rx_dummy_0,     // 0x9F
 };
 
 //-----------------------------------------------------------------------------
 void (* const ln_messages_2[32])(uint8_t, uint8_t) = {
-  ln_handler_loco_spd,    // 0xA0
-  ln_handler_loco_dirf,   // 0xA1
-  ln_handler_loco_snd,    // 0xA2
-  ln_handler_dummy_2,     // 0xA3
-  ln_handler_dummy_2,     // 0xA4
-  ln_handler_dummy_2,     // 0xA5
-  ln_handler_dummy_2,     // 0xA6
-  ln_handler_dummy_2,     // 0xA7
-  ln_handler_dummy_2,     // 0xA8
-  ln_handler_dummy_2,     // 0xA9
-  ln_handler_dummy_2,     // 0xAA
-  ln_handler_dummy_2,     // 0xAB
-  ln_handler_dummy_2,     // 0xAC
-  ln_handler_dummy_2,     // 0xAD
-  ln_handler_dummy_2,     // 0xAE
-  ln_handler_dummy_2,     // 0xAF
-  ln_handler_sq_req,      // 0xB0
-  ln_handler_sw_rep,      // 0xB1
-  ln_handler_input_rep,   // 0xB2
-  ln_handler_dummy_2,     // 0xB3
-  ln_handler_long_ack,    // 0xB4
-  ln_handler_slot_stat1,  // 0xB5
-  ln_handler_consist_func,// 0xB6
-  ln_handler_dummy_2,     // 0xB7
-  ln_handler_unlink_slots,// 0xB8
-  ln_handler_link_slots,  // 0xB9
-  ln_handler_move_slots,  // 0xBA
-  ln_handler_rq_sl_data,  // 0xBB
-  ln_handler_sw_state,    // 0xBC
-  ln_handler_sw_ack,      // 0xBD
-  ln_handler_dummy_2,     // 0xBE
-  ln_handler_loco_adr,    // 0xBF
+  loconet_rx_loco_spd,    // 0xA0
+  loconet_rx_loco_dirf,   // 0xA1
+  loconet_rx_loco_snd,    // 0xA2
+  loconet_rx_dummy_2,     // 0xA3
+  loconet_rx_dummy_2,     // 0xA4
+  loconet_rx_dummy_2,     // 0xA5
+  loconet_rx_dummy_2,     // 0xA6
+  loconet_rx_dummy_2,     // 0xA7
+  loconet_rx_dummy_2,     // 0xA8
+  loconet_rx_dummy_2,     // 0xA9
+  loconet_rx_dummy_2,     // 0xAA
+  loconet_rx_dummy_2,     // 0xAB
+  loconet_rx_dummy_2,     // 0xAC
+  loconet_rx_dummy_2,     // 0xAD
+  loconet_rx_dummy_2,     // 0xAE
+  loconet_rx_dummy_2,     // 0xAF
+  loconet_rx_sq_req,      // 0xB0
+  loconet_rx_sw_rep,      // 0xB1
+  loconet_rx_input_rep,   // 0xB2
+  loconet_rx_dummy_2,     // 0xB3
+  loconet_rx_long_ack,    // 0xB4
+  loconet_rx_slot_stat1,  // 0xB5
+  loconet_rx_consist_func,// 0xB6
+  loconet_rx_dummy_2,     // 0xB7
+  loconet_rx_unlink_slots,// 0xB8
+  loconet_rx_link_slots,  // 0xB9
+  loconet_rx_move_slots,  // 0xBA
+  loconet_rx_rq_sl_data,  // 0xBB
+  loconet_rx_sw_state,    // 0xBC
+  loconet_rx_sw_ack,      // 0xBD
+  loconet_rx_dummy_2,     // 0xBE
+  loconet_rx_loco_adr,    // 0xBF
 };
 
 //-----------------------------------------------------------------------------
 void (* const ln_messages_4[32])(uint8_t, uint8_t, uint8_t, uint8_t) = {
-  ln_handler_dummy_4,     // 0xC0
-  ln_handler_dummy_4,     // 0xC1
-  ln_handler_dummy_4,     // 0xC2
-  ln_handler_dummy_4,     // 0xC3
-  ln_handler_dummy_4,     // 0xC4
-  ln_handler_dummy_4,     // 0xC5
-  ln_handler_dummy_4,     // 0xC6
-  ln_handler_dummy_4,     // 0xC7
-  ln_handler_dummy_4,     // 0xC8
-  ln_handler_dummy_4,     // 0xC9
-  ln_handler_dummy_4,     // 0xCA
-  ln_handler_dummy_4,     // 0xCB
-  ln_handler_dummy_4,     // 0xCC
-  ln_handler_dummy_4,     // 0xCD
-  ln_handler_dummy_4,     // 0xCE
-  ln_handler_dummy_4,     // 0xCF
-  ln_handler_dummy_4,     // 0xD0
-  ln_handler_dummy_4,     // 0xD1
-  ln_handler_dummy_4,     // 0xD2
-  ln_handler_dummy_4,     // 0xD3
-  ln_handler_dummy_4,     // 0xD4
-  ln_handler_dummy_4,     // 0xD5
-  ln_handler_dummy_4,     // 0xD6
-  ln_handler_dummy_4,     // 0xD7
-  ln_handler_dummy_4,     // 0xD8
-  ln_handler_dummy_4,     // 0xD9
-  ln_handler_dummy_4,     // 0xDA
-  ln_handler_dummy_4,     // 0xDB
-  ln_handler_dummy_4,     // 0xDC
-  ln_handler_dummy_4,     // 0xDD
-  ln_handler_dummy_4,     // 0xDE
-  ln_handler_dummy_4,     // 0xDF
+  loconet_rx_dummy_4,     // 0xC0
+  loconet_rx_dummy_4,     // 0xC1
+  loconet_rx_dummy_4,     // 0xC2
+  loconet_rx_dummy_4,     // 0xC3
+  loconet_rx_dummy_4,     // 0xC4
+  loconet_rx_dummy_4,     // 0xC5
+  loconet_rx_dummy_4,     // 0xC6
+  loconet_rx_dummy_4,     // 0xC7
+  loconet_rx_dummy_4,     // 0xC8
+  loconet_rx_dummy_4,     // 0xC9
+  loconet_rx_dummy_4,     // 0xCA
+  loconet_rx_dummy_4,     // 0xCB
+  loconet_rx_dummy_4,     // 0xCC
+  loconet_rx_dummy_4,     // 0xCD
+  loconet_rx_dummy_4,     // 0xCE
+  loconet_rx_dummy_4,     // 0xCF
+  loconet_rx_dummy_4,     // 0xD0
+  loconet_rx_dummy_4,     // 0xD1
+  loconet_rx_dummy_4,     // 0xD2
+  loconet_rx_dummy_4,     // 0xD3
+  loconet_rx_dummy_4,     // 0xD4
+  loconet_rx_dummy_4,     // 0xD5
+  loconet_rx_dummy_4,     // 0xD6
+  loconet_rx_dummy_4,     // 0xD7
+  loconet_rx_dummy_4,     // 0xD8
+  loconet_rx_dummy_4,     // 0xD9
+  loconet_rx_dummy_4,     // 0xDA
+  loconet_rx_dummy_4,     // 0xDB
+  loconet_rx_dummy_4,     // 0xDC
+  loconet_rx_dummy_4,     // 0xDD
+  loconet_rx_dummy_4,     // 0xDE
+  loconet_rx_dummy_4,     // 0xDF
 };
 
 //-----------------------------------------------------------------------------
 void (* const ln_messages_n[32])(uint8_t*, uint8_t) = {
-  ln_handler_dummy_n,     // 0xE0
-  ln_handler_dummy_n,     // 0xE1
-  ln_handler_dummy_n,     // 0xE2
-  ln_handler_dummy_n,     // 0xE3
-  ln_handler_dummy_n,     // 0xE4
-  ln_handler_dummy_n,     // 0xE5
-  ln_handler_dummy_n,     // 0xE6
-  ln_handler_rd_sl_data_, // 0xE7
-  ln_handler_dummy_n,     // 0xE8
-  ln_handler_dummy_n,     // 0xE9
-  ln_handler_dummy_n,     // 0xEA
-  ln_handler_dummy_n,     // 0xEB
-  ln_handler_dummy_n,     // 0xEC
-  ln_handler_dummy_n,     // 0xED
-  ln_handler_dummy_n,     // 0xEE
-  ln_handler_wr_sl_data_, // 0xEF
-  ln_handler_dummy_n,     // 0xF0
-  ln_handler_dummy_n,     // 0xF1
-  ln_handler_dummy_n,     // 0xF2
-  ln_handler_dummy_n,     // 0xF3
-  ln_handler_dummy_n,     // 0xF4
-  ln_handler_dummy_n,     // 0xF5
-  ln_handler_dummy_n,     // 0xF6
-  ln_handler_dummy_n,     // 0xF7
-  ln_handler_dummy_n,     // 0xF8
-  ln_handler_dummy_n,     // 0xF9
-  ln_handler_dummy_n,     // 0xFA
-  ln_handler_dummy_n,     // 0xFB
-  ln_handler_dummy_n,     // 0xFC
-  ln_handler_dummy_n,     // 0xFD
-  ln_handler_dummy_n,     // 0xFE
-  ln_handler_dummy_n,     // 0xFF
+  loconet_rx_dummy_n,     // 0xE0
+  loconet_rx_dummy_n,     // 0xE1
+  loconet_rx_dummy_n,     // 0xE2
+  loconet_rx_dummy_n,     // 0xE3
+  loconet_rx_dummy_n,     // 0xE4
+  loconet_rx_dummy_n,     // 0xE5
+  loconet_rx_dummy_n,     // 0xE6
+  loconet_rx_rd_sl_data_, // 0xE7
+  loconet_rx_dummy_n,     // 0xE8
+  loconet_rx_dummy_n,     // 0xE9
+  loconet_rx_dummy_n,     // 0xEA
+  loconet_rx_dummy_n,     // 0xEB
+  loconet_rx_dummy_n,     // 0xEC
+  loconet_rx_dummy_n,     // 0xED
+  loconet_rx_dummy_n,     // 0xEE
+  loconet_rx_wr_sl_data_, // 0xEF
+  loconet_rx_dummy_n,     // 0xF0
+  loconet_rx_dummy_n,     // 0xF1
+  loconet_rx_dummy_n,     // 0xF2
+  loconet_rx_dummy_n,     // 0xF3
+  loconet_rx_dummy_n,     // 0xF4
+  loconet_rx_dummy_n,     // 0xF5
+  loconet_rx_dummy_n,     // 0xF6
+  loconet_rx_dummy_n,     // 0xF7
+  loconet_rx_dummy_n,     // 0xF8
+  loconet_rx_dummy_n,     // 0xF9
+  loconet_rx_dummy_n,     // 0xFA
+  loconet_rx_dummy_n,     // 0xFB
+  loconet_rx_dummy_n,     // 0xFC
+  loconet_rx_dummy_n,     // 0xFD
+  loconet_rx_dummy_n,     // 0xFE
+  loconet_rx_dummy_n,     // 0xFF
 };
 
 //-----------------------------------------------------------------------------
 // Read slot data (SL_RD_DATA)
 // Handle special cases
-static void ln_handler_rd_sl_data_(uint8_t *data, uint8_t length) {
+static void loconet_rx_rd_sl_data_(uint8_t *data, uint8_t length) {
   if (data[0] == 0x7C) { // Program task final
-    ln_handler_prog_task_final(&data[1], length - 1);
+    loconet_rx_prog_task_final(&data[1], length - 1);
   } else { // Default handler
-    ln_handler_rd_sl_data(data, length);
+    loconet_rx_rd_sl_data(data, length);
   }
 }
 
 //-----------------------------------------------------------------------------
 // Write slot data (RW_SL_DATA)
 // Handle special cases
-static void ln_handler_wr_sl_data_(uint8_t *data, uint8_t length) {
+static void loconet_rx_wr_sl_data_(uint8_t *data, uint8_t length) {
   if (data[0] == 0x7B) { // Fast clock
-    ln_handler_fast_clock(&data[1], length - 1);
+    loconet_rx_fast_clock(&data[1], length - 1);
   } else if (data[0] == 0x7C) { // Program task start
-    ln_handler_prog_task_start(&data[1], length - 1);
+    loconet_rx_prog_task_start(&data[1], length - 1);
   } else { // Default handler
-    ln_handler_wr_sl_data(data, length);
+    loconet_rx_wr_sl_data(data, length);
   }
 }
 
@@ -736,17 +736,17 @@ static uint8_t loconet_rx_process(void)
 
 //-----------------------------------------------------------------------------
 // Dummy handlers
-void ln_handler_dummy_0(void)
+void loconet_rx_dummy_0(void)
 {
 }
 
-void ln_handler_dummy_2(uint8_t a, uint8_t b)
+void loconet_rx_dummy_2(uint8_t a, uint8_t b)
 {
   (void)a;
   (void)b;
 }
 
-void ln_handler_dummy_4(uint8_t a, uint8_t b, uint8_t c, uint8_t d)
+void loconet_rx_dummy_4(uint8_t a, uint8_t b, uint8_t c, uint8_t d)
 {
   (void)a;
   (void)b;
@@ -754,7 +754,7 @@ void ln_handler_dummy_4(uint8_t a, uint8_t b, uint8_t c, uint8_t d)
   (void)d;
 }
 
-void ln_handler_dummy_n(uint8_t *d, uint8_t l)
+void loconet_rx_dummy_n(uint8_t *d, uint8_t l)
 {
   (void)d;
   (void)l;
