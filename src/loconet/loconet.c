@@ -317,6 +317,13 @@ static void loconet_irq_collision(void)
     loconet_status.bit.TRANSMIT = 0;
     // Pull Tx pin low
     loconet_tx_port->OUTSET.reg |= loconet_tx_pin;
+    // Reset transmit and receive index
+    loconet_tx_current->tx_index = 0;
+    loconet_tx_current->rx_index = 0;
+    // Place message back at front of queue
+    loconet_tx_current->next = loconet_tx_current;
+    loconet_tx_queue = loconet_tx_current;
+    loconet_tx_current = 0;
   }
 }
 
