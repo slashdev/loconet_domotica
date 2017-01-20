@@ -305,6 +305,11 @@ void loconet_irq_sercom(void)
       loconet_sercom->USART.DATA.reg;
       // Make sure Framing error status is cleared
       loconet_sercom->USART.STATUS.reg |= SERCOM_USART_STATUS_FERR;
+    } else if (loconet_sercom->USART.STATUS.bit.FERR) {
+      // Reset flag
+      loconet_sercom->USART.STATUS.reg |= SERCOM_USART_STATUS_FERR;
+      // Framing error -> Collision detected
+      loconet_irq_collision();
     } else if (loconet_status.bit.TRANSMIT) {
       // Read own bytes to see if we have a collision
       uint8_t data = loconet_sercom->USART.DATA.reg;
