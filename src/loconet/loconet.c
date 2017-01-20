@@ -18,6 +18,8 @@ void loconet_tx_stop(void);
 // Peripherals to use for communication
 Sercom *loconet_sercom;
 Tc *loconet_flank_timer;
+PortGroup *loconet_tx_port;
+uint32_t loconet_tx_pin;
 
 //-----------------------------------------------------------------------------
 // Global variables
@@ -34,6 +36,7 @@ typedef struct MESSAGE {
   uint8_t data_length;
   // Current index we're sending
   uint8_t tx_index;
+  uint8_t rx_index;
 } LOCONET_MESSAGE_Type;
 
 static LOCONET_MESSAGE_Type *loconet_tx_queue = 0;
@@ -157,6 +160,14 @@ void loconet_init_flank_timer(Tc *timer, uint32_t pm_tmr_mask, uint32_t gclock_t
 }
 
 //-----------------------------------------------------------------------------
+// Save which pin is connected to TX
+void loconet_save_tx_pin(PortGroup *group, uint32_t pin)
+{
+  loconet_tx_port = group;
+  loconet_tx_pin = (0x01ul << pin);
+}
+
+//-----------------------------------------------------------------------------
 // Define LOCONET_RX_RINGBUFFER_Size if it's not defined
 #ifndef LOCONET_RX_RINGBUFFER_Size
 #define LOCONET_RX_RINGBUFFER_Size 64
@@ -259,7 +270,6 @@ void loconet_irq_flank_fall(void) {
   loconet_timer_status.reg = LOCONET_TIMER_STATUS_LINE_BREAK;
   // If flank changes, loconet is not idle anymore
   loconet_status.bit.IDLE = 0;
-  // TODO: BREAK DETECT
 }
 
 //-----------------------------------------------------------------------------
@@ -284,6 +294,36 @@ void loconet_irq_timer(void) {
     }
   } else if (loconet_timer_status.bit.PRIORITY_DELAY) {
     loconet_status.reg |= LOCONET_STATUS_IDLE;
+  } else if (loconet_timer_status.bit.LINE_BREAK) {
+    // Remove collision detected flag
+    loconet_status.bit.COLLISION_DETECTED = 0;
+    // Release TX pin
+    loconet_tx_port->OUTCLR.reg |= loconet_tx_pin;
+    // Enable receiving and sending
+    loconet_sercom->USART.CTRLB.reg |= SERCOM_USART_CTRLB_RXEN | SERCOM_USART_CTRLB_TXEN;
+  }
+}
+
+static void loconet_irq_collision(void)
+{
+  // Set collision detected flag
+  loconet_status.bit.COLLISION_DETECTED = 1;
+  // Stop receiving and sending
+  loconet_sercom->USART.CTRLB.bit.RXEN = 0;
+  loconet_sercom->USART.CTRLB.bit.TXEN = 0;
+  // If we were transmitting, enforce line break
+  if (loconet_status.bit.TRANSMIT) {
+    // Disable TRANSMIT
+    loconet_status.bit.TRANSMIT = 0;
+    // Pull Tx pin low
+    loconet_tx_port->OUTSET.reg |= loconet_tx_pin;
+    // Reset transmit and receive index
+    loconet_tx_current->tx_index = 0;
+    loconet_tx_current->rx_index = 0;
+    // Place message back at front of queue
+    loconet_tx_current->next = loconet_tx_current;
+    loconet_tx_queue = loconet_tx_current;
+    loconet_tx_current = 0;
   }
 }
 
@@ -293,8 +333,26 @@ void loconet_irq_sercom(void)
 {
   // Rx complete
   if (loconet_sercom->USART.INTFLAG.bit.RXC) {
-    // Get data from USART and place it in the ringbuffer
-    loconet_rx_ringbuffer_push(loconet_sercom->USART.DATA.reg);
+    if (loconet_status.bit.COLLISION_DETECTED) {
+      // Ignore byte
+      loconet_sercom->USART.DATA.reg;
+      // Make sure Framing error status is cleared
+      loconet_sercom->USART.STATUS.reg |= SERCOM_USART_STATUS_FERR;
+    } else if (loconet_sercom->USART.STATUS.bit.FERR) {
+      // Reset flag
+      loconet_sercom->USART.STATUS.reg |= SERCOM_USART_STATUS_FERR;
+      // Framing error -> Collision detected
+      loconet_irq_collision();
+    } else if (loconet_status.bit.TRANSMIT) {
+      // Read own bytes to see if we have a collision
+      uint8_t data = loconet_sercom->USART.DATA.reg;
+      if (loconet_tx_current && data != loconet_tx_current->data[loconet_tx_current->rx_index++]) {
+        loconet_irq_collision();
+      }
+    } else {
+      // Get data from USART and place it in the ringbuffer
+      loconet_rx_ringbuffer_push(loconet_sercom->USART.DATA.reg);
+    }
   }
 
   // Tx complete
@@ -306,15 +364,25 @@ void loconet_irq_sercom(void)
   }
 
   // Data register empty (TX)
-  if (loconet_sercom->USART.INTFLAG.bit.DRE && loconet_status.bit.TRANSMIT) {
-    // Do we have another byte to send?
-    if (loconet_tx_current->tx_index < loconet_tx_current->data_length) {
-      loconet_sercom->USART.DATA.reg = loconet_tx_current->data[loconet_tx_current->tx_index];
-      loconet_tx_current->tx_index++;
-    } else {
+  if (loconet_sercom->USART.INTFLAG.bit.DRE) {
+    // Is a collision detected? Or is our message gone AWOL (due to a collision)?
+    // If so: do not attempt to buffer bytes to send
+    if (loconet_status.bit.COLLISION_DETECTED || !loconet_tx_current) {
+      // Disable TRANSMIT
       loconet_status.bit.TRANSMIT = 0;
       // Disable Data Register Empty interrupt
       loconet_sercom->USART.INTENCLR.reg = SERCOM_USART_INTENCLR_DRE;
+    } else if (loconet_status.bit.TRANSMIT) {
+      // Do we have a message and do we have another byte to send?
+      if (loconet_tx_current && loconet_tx_current->tx_index < loconet_tx_current->data_length) {
+        loconet_sercom->USART.DATA.reg = loconet_tx_current->data[loconet_tx_current->tx_index];
+        loconet_tx_current->tx_index++;
+      } else {
+        // Disable TRANSMIT
+        loconet_status.bit.TRANSMIT = 0;
+        // Disable Data Register Empty interrupt
+        loconet_sercom->USART.INTENCLR.reg = SERCOM_USART_INTENCLR_DRE;
+      }
     }
   }
 }
@@ -544,6 +612,18 @@ static void ln_handler_wr_sl_data_(uint8_t *data, uint8_t length) {
 }
 
 //-----------------------------------------------------------------------------
+// Calculate the checksum of a message
+static uint8_t loconet_calc_checksum(uint8_t *data, uint8_t length)
+{
+  uint8_t checksum = 0xFF;
+  while (length--) {
+    // Dereference data pointer, XOR it with checksum and advance pointer by 1
+    checksum ^= *data++;
+  }
+  return checksum;
+}
+
+//-----------------------------------------------------------------------------
 typedef union {
   struct {
     uint8_t NUMBER:5;
@@ -602,6 +682,15 @@ static uint8_t loconet_rx_process(void)
       break;
   }
 
+  // Check if the buffer contains no new opcodes (could happen due to colissions)
+  uint8_t index_of_writer_or_eom = writer < (reader + message_size) ? writer : reader + message_size;
+  for (uint8_t index = reader + 1; index < index_of_writer_or_eom; index++) {
+    if (buffer[index % LOCONET_RX_RINGBUFFER_Size] & LOCONET_OPCODE_FLAG) {
+      loconet_rx_ringbuffer.reader = index % LOCONET_RX_RINGBUFFER_Size;
+      return 1; // Read the new message right away
+    }
+  }
+
   // Check if we have all the bytes for this message
   if (writer < reader + message_size) {
     return 0;
@@ -610,16 +699,13 @@ static uint8_t loconet_rx_process(void)
   // Get bytes for passing (and build checksum)
   uint8_t data[message_size - 2];
   uint8_t start = reader + 1;
-  uint8_t checksum = opcode.byte;
 
   for (uint8_t index = 0; index < message_size - 2; index++) {
     data[index] = buffer[(start + index) % LOCONET_RX_RINGBUFFER_Size];
-    checksum ^= data[index];
   }
 
   // Verify checksum (skip message if failed)
-  checksum ^= buffer[(start + message_size - 2) % LOCONET_RX_RINGBUFFER_Size];
-  if (checksum != 0xFF) {
+  if (loconet_calc_checksum(data, message_size)) {
     loconet_rx_ringbuffer.reader = (reader + message_size) % LOCONET_RX_RINGBUFFER_Size;
     return 0;
   }
@@ -678,8 +764,11 @@ void ln_handler_dummy_n(uint8_t *d, uint8_t l)
 void loconet_tx_stop(void)
 {
   loconet_status.bit.TRANSMIT = 0;
-  free(loconet_tx_current->data);
-  free(loconet_tx_current);
+  // We might not have a message due to collision detection
+  if (loconet_tx_current) {
+    free(loconet_tx_current->data);
+    free(loconet_tx_current);
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -700,6 +789,8 @@ static uint8_t loconet_tx_process(void)
   // Can we start transmission?
   if (!loconet_tx_queue) {
     // No message is in the queue
+    return 0;
+  } else if (loconet_status.bit.COLLISION_DETECTED) {
     return 0;
   } else if (!loconet_status.bit.IDLE) {
     // We're not allowed to transmit, don't try to
@@ -772,18 +863,6 @@ static LOCONET_MESSAGE_Type *loconet_build_message(uint8_t length)
   message->data_length = length;
   // Return the new message
   return message;
-}
-
-//-----------------------------------------------------------------------------
-// Calculate the checksum of a message
-static uint8_t loconet_calc_checksum(uint8_t *data, uint8_t length)
-{
-  uint8_t checksum = 0xFF;
-  while (length--) {
-    // Dereference data pointer, XOR it with checksum and advance pointer by 1
-    checksum ^= *data++;
-  }
-  return checksum;
 }
 
 //-----------------------------------------------------------------------------

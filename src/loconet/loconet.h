@@ -67,6 +67,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "samd20.h"
+#include "hal_gpio.h"
 
 //-----------------------------------------------------------------------------
 // Give a warning if F_CPU is not 8MHz
@@ -102,6 +103,7 @@ extern void loconet_init(void);
 extern void loconet_init_usart(Sercom*, uint32_t, uint32_t, uint8_t, uint32_t);
 extern void loconet_init_flank_detection(uint8_t);
 extern void loconet_init_flank_timer(Tc*, uint32_t, uint32_t, uint32_t);
+extern void loconet_save_tx_pin(PortGroup*, uint32_t);
 
 //-----------------------------------------------------------------------------
 // IRQs for flank rise / fall
@@ -164,20 +166,25 @@ extern void loconet_tx_queue_n(uint8_t opcode, uint8_t priority, uint8_t *d, uin
       TC##fl_tmr##_GCLK_ID,                                                   \
       TC##fl_tmr##_IRQn                                                       \
     );                                                                        \
+    /* Save tx pin */                                                         \
+    loconet_save_tx_pin(                                                      \
+      &PORT->Group[HAL_GPIO_PORT##tx_port],                                   \
+      tx_pin                                                                  \
+    );                                                                        \
   }                                                                           \
   void loconet_handle_eic(void) {                                             \
     /* Return if it's not our external pin to watch */                        \
     if (!EIC->INTFLAG.bit.EXTINT##fl_int) {                                   \
       return;                                                                 \
     }                                                                         \
+    /* Reset flag */                                                          \
+    EIC->INTFLAG.reg |= EIC_INTFLAG_EXTINT##fl_int;                           \
     /* Determine RISE / FALL */                                               \
     if (HAL_GPIO_LOCONET_FL_read()) {                                         \
       loconet_irq_flank_rise();                                               \
     } else {                                                                  \
       loconet_irq_flank_fall();                                               \
     }                                                                         \
-    /* Reset flag */                                                          \
-    EIC->INTFLAG.reg |= EIC_INTFLAG_EXTINT##fl_int;                           \
   }                                                                           \
   /* Handle timer interrupt */                                                \
   void irq_handler_tc##fl_tmr(void);                                          \
