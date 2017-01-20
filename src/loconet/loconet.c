@@ -393,20 +393,20 @@ static void loconet_tx_start(void)
 }
 
 //-----------------------------------------------------------------------------
-static uint8_t loconet_tx_process(void)
+static void loconet_tx_process(void)
 {
   // Can we start transmission?
   if (!loconet_tx_queue) {
     // No message is in the queue
-    return 0;
+    return;
   } else if (loconet_status.bit.COLLISION_DETECTED) {
-    return 0;
+    return;
   } else if (!loconet_status.bit.IDLE) {
     // We're not allowed to transmit, don't try to
-    return 0;
+    return;
   } else if (loconet_status.bit.TRANSMIT) {
     // Do not start transmission if we're already sending
-    return 0;
+    return;
   }
 
   // We have a queue, loconet is idle, so we can start sending
@@ -420,7 +420,7 @@ static uint8_t loconet_tx_process(void)
   // Start sending
   loconet_tx_start();
 
-  return 0;
+  return;
 }
 
 //-----------------------------------------------------------------------------
@@ -429,8 +429,8 @@ void loconet_loop(void)
 {
   // If a message is received and handled, keep processing new messages
   while(loconet_rx_process());
-  // If a message is sent, keep sending messages
-  while(loconet_tx_process());
+  // Send a message if there is one available
+  loconet_tx_process();
 }
 
 //-----------------------------------------------------------------------------
