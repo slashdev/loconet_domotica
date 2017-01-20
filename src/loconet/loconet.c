@@ -730,6 +730,8 @@ static uint8_t loconet_tx_process(void)
   if (!loconet_tx_queue) {
     // No message is in the queue
     return 0;
+  } else if (loconet_status.bit.COLLISION_DETECTED) {
+    return 0;
   } else if (!loconet_status.bit.IDLE) {
     // We're not allowed to transmit, don't try to
     return 0;
