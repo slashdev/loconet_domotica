@@ -12,7 +12,6 @@
 
 //-----------------------------------------------------------------------------
 // Prototypes
-void loconet_tx_stop(void);
 
 //-----------------------------------------------------------------------------
 // Peripherals to use for communication
@@ -25,23 +24,6 @@ uint32_t loconet_tx_pin;
 // Global variables
 LOCONET_CONFIG_Type loconet_config = { 0 };
 LOCONET_STATUS_Type loconet_status = { 0 };
-
-//-----------------------------------------------------------------------------
-// Loconet message/linked list definition
-typedef struct MESSAGE {
-  // Control fields
-  uint8_t priority;
-  struct MESSAGE *next;
-  // Message fields
-  uint8_t *data;
-  uint8_t data_length;
-  // Current index we're sending
-  uint8_t tx_index;
-  uint8_t rx_index;
-} LOCONET_MESSAGE_Type;
-
-static LOCONET_MESSAGE_Type *loconet_tx_queue = 0;
-static LOCONET_MESSAGE_Type *loconet_tx_current = 0;
 
 //-----------------------------------------------------------------------------
 // Initialize USART for loconet
@@ -267,13 +249,8 @@ static void loconet_irq_collision(void)
     loconet_status.bit.TRANSMIT = 0;
     // Pull Tx pin low
     loconet_tx_port->OUTSET.reg |= loconet_tx_pin;
-    // Reset transmit and receive index
-    loconet_tx_current->tx_index = 0;
-    loconet_tx_current->rx_index = 0;
-    // Place message back at front of queue
-    loconet_tx_current->next = loconet_tx_current;
-    loconet_tx_queue = loconet_tx_current;
-    loconet_tx_current = 0;
+    // Reset message to queue
+    loconet_tx_reset_current_message_to_queue();
   }
 }
 
@@ -295,8 +272,7 @@ void loconet_irq_sercom(void)
       loconet_irq_collision();
     } else if (loconet_status.bit.TRANSMIT) {
       // Read own bytes to see if we have a collision
-      uint8_t data = loconet_sercom->USART.DATA.reg;
-      if (loconet_tx_current && data != loconet_tx_current->data[loconet_tx_current->rx_index++]) {
+      if (loconet_sercom->USART.DATA.reg ^ loconet_tx_next_rx_byte()) {
         loconet_irq_collision();
       }
     } else {
@@ -317,21 +293,20 @@ void loconet_irq_sercom(void)
   if (loconet_sercom->USART.INTFLAG.bit.DRE) {
     // Is a collision detected? Or is our message gone AWOL (due to a collision)?
     // If so: do not attempt to buffer bytes to send
-    if (loconet_status.bit.COLLISION_DETECTED || !loconet_tx_current) {
+    if (loconet_status.bit.COLLISION_DETECTED) {
       // Disable TRANSMIT
       loconet_status.bit.TRANSMIT = 0;
       // Disable Data Register Empty interrupt
       loconet_sercom->USART.INTENCLR.reg = SERCOM_USART_INTENCLR_DRE;
     } else if (loconet_status.bit.TRANSMIT) {
       // Do we have a message and do we have another byte to send?
-      if (loconet_tx_current && loconet_tx_current->tx_index < loconet_tx_current->data_length) {
-        loconet_sercom->USART.DATA.reg = loconet_tx_current->data[loconet_tx_current->tx_index];
-        loconet_tx_current->tx_index++;
-      } else {
+      if (loconet_tx_finished()) {
         // Disable TRANSMIT
         loconet_status.bit.TRANSMIT = 0;
         // Disable Data Register Empty interrupt
         loconet_sercom->USART.INTENCLR.reg = SERCOM_USART_INTENCLR_DRE;
+      } else {
+        loconet_sercom->USART.DATA.reg = loconet_tx_next_tx_byte();
       }
     }
   }
@@ -350,53 +325,10 @@ uint8_t loconet_calc_checksum(uint8_t *data, uint8_t length)
 }
 
 //-----------------------------------------------------------------------------
-// Stop transmission and free memory of the message
-void loconet_tx_stop(void)
-{
-  loconet_status.bit.TRANSMIT = 0;
-  // We might not have a message due to collision detection
-  if (loconet_tx_current) {
-    free(loconet_tx_current->data);
-    free(loconet_tx_current);
-  }
-}
-
-//-----------------------------------------------------------------------------
 // Enable data register empty interrupt so we can send data
-static void loconet_sercom_enable_dre_irq(void)
+void loconet_sercom_enable_dre_irq(void)
 {
   loconet_sercom->USART.INTENSET.reg = SERCOM_USART_INTENSET_DRE;
-}
-
-//-----------------------------------------------------------------------------
-static void loconet_tx_process(void)
-{
-  // Can we start transmission?
-  if (!loconet_tx_queue) {
-    // No message is in the queue
-    return;
-  } else if (loconet_status.bit.COLLISION_DETECTED) {
-    return;
-  } else if (!loconet_status.bit.IDLE) {
-    // We're not allowed to transmit, don't try to
-    return;
-  } else if (loconet_status.bit.TRANSMIT) {
-    // Do not start transmission if we're already sending
-    return;
-  }
-
-  // We have a queue, loconet is idle, so we can start sending
-  loconet_status.reg |= LOCONET_STATUS_TRANSMIT;
-
-  // Set which bytes need to be send
-  loconet_tx_current = loconet_tx_queue;
-  loconet_tx_queue = loconet_tx_current->next;
-  loconet_tx_current->next = 0;
-
-  // Start sending
-  loconet_sercom_enable_dre_irq();
-
-  return;
 }
 
 //-----------------------------------------------------------------------------
@@ -407,101 +339,4 @@ void loconet_loop(void)
   while(loconet_rx_process());
   // Send a message if there is one available
   loconet_tx_process();
-}
-
-//-----------------------------------------------------------------------------
-static void loconet_tx_enqueue(LOCONET_MESSAGE_Type *message)
-{
-  // If queue is empty, push it
-  if (!loconet_tx_queue) {
-    loconet_tx_queue = message;
-    return;
-  }
-
-  // Pointers to previous and current node
-  LOCONET_MESSAGE_Type *prev = loconet_tx_queue;
-  LOCONET_MESSAGE_Type *curr = loconet_tx_queue->next;
-
-  // Loop through message which are more important (lower priority)
-  for (; curr && curr->priority < message->priority + 1; prev = curr, curr = curr->next);
-
-  // Loop through messages which have the same priority.
-  // All priority should be lowered by 1, and place the message at the end.
-  for (; curr && curr->priority < message->priority + 2; curr->priority--, prev = curr, curr = curr->next);
-  prev->next = message;
-  message->next = curr;
-
-  // All next messages should have their priorities decreased.
-  // This prevents starvation of messages at the end of the queue
-  for (; curr; curr->priority--, curr = curr->next);
-}
-
-//-----------------------------------------------------------------------------
-// Build an empty message with the correct length
-static LOCONET_MESSAGE_Type *loconet_build_message(uint8_t length)
-{
-  // Allocate space for linked list node
-  LOCONET_MESSAGE_Type *message = malloc(sizeof(LOCONET_MESSAGE_Type));
-  memset(message, 0, sizeof(LOCONET_MESSAGE_Type));
-  // Allocate space for message bytes
-  message->data = malloc(sizeof(uint8_t) * length);
-  message->data_length = length;
-  // Return the new message
-  return message;
-}
-
-//-----------------------------------------------------------------------------
-void loconet_tx_queue_0(uint8_t opcode, uint8_t priority)
-{
-  LOCONET_MESSAGE_Type *message = loconet_build_message(2);
-  // Set priority
-  message->priority = priority;
-  // Fill message
-  message->data[0] = opcode;
-  message->data[1] = loconet_calc_checksum(message->data, 1);
-  // Enqueue message
-  loconet_tx_enqueue(message);
-}
-
-void loconet_tx_queue_2(uint8_t opcode, uint8_t priority, uint8_t  a, uint8_t b)
-{
-  LOCONET_MESSAGE_Type *message = loconet_build_message(4);
-  // Set priority
-  message->priority = priority;
-  // Fill message
-  message->data[0] = opcode;
-  message->data[1] = a;
-  message->data[2] = b;
-  message->data[3] = loconet_calc_checksum(message->data, 3);
-  // Enqueue message
-  loconet_tx_enqueue(message);
-}
-
-void loconet_tx_queue_4(uint8_t opcode, uint8_t priority, uint8_t  a, uint8_t b, uint8_t c, uint8_t d)
-{
-  LOCONET_MESSAGE_Type *message = loconet_build_message(6);
-  // Set priority
-  message->priority = priority;
-  // Fill message
-  message->data[0] = opcode;
-  message->data[1] = a;
-  message->data[2] = b;
-  message->data[3] = c;
-  message->data[4] = d;
-  message->data[5] = loconet_calc_checksum(message->data, 5);
-  // Enqueue message
-  loconet_tx_enqueue(message);
-}
-
-void loconet_tx_queue_n(uint8_t opcode, uint8_t priority, uint8_t *data, uint8_t length)
-{
-  LOCONET_MESSAGE_Type *message = loconet_build_message(length + 2);
-  // Set priority
-  message->priority = priority;
-  // Fill message
-  message->data[0] = opcode;
-  for(uint8_t idx = 0; idx < length; message->data[idx+1] = data[idx], idx++);
-  message->data[length+1] = loconet_calc_checksum(message->data, length + 1);
-  // Enqueue message
-  loconet_tx_enqueue(message);
 }

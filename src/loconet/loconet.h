@@ -69,6 +69,7 @@
 #include "samd20.h"
 #include "hal_gpio.h"
 #include "loconet_rx.h"
+#include "loconet_tx.h"
 
 //-----------------------------------------------------------------------------
 // Give a warning if F_CPU is not 8MHz
@@ -142,16 +143,11 @@ extern void loconet_handle_eic(void);
 // Handles processing and sending of messages
 extern void loconet_loop(void);
 
+extern void loconet_sercom_enable_dre_irq(void);
+
 //-----------------------------------------------------------------------------
 // Calculate checksum of a message
 extern uint8_t loconet_calc_checksum(uint8_t *data, uint8_t length);
-
-//-----------------------------------------------------------------------------
-// Enqueue a message
-extern void loconet_tx_queue_0(uint8_t opcode, uint8_t priority);
-extern void loconet_tx_queue_2(uint8_t opcode, uint8_t priority, uint8_t  a, uint8_t b);
-extern void loconet_tx_queue_4(uint8_t opcode, uint8_t priority, uint8_t  a, uint8_t b, uint8_t c, uint8_t d);
-extern void loconet_tx_queue_n(uint8_t opcode, uint8_t priority, uint8_t *d, uint8_t l);
 
 // Macro for loconet_init and irq_handler_sercom<nr>
 #define LOCONET_BUILD(sercom, tx_port, tx_pin, rx_port, rx_pin, rx_pad, fl_port, fl_pin, fl_int, fl_tmr) \
