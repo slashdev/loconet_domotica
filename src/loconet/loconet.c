@@ -157,6 +157,9 @@ void loconet_init_flank_timer(Tc *timer, uint32_t pm_tmr_mask, uint32_t gclock_t
    */
   loconet_flank_timer->COUNT16.INTENSET.reg = TC_INTENSET_MC(1);
   NVIC_EnableIRQ(nvic_irqn);
+
+  // Start the flank rise at least once
+  loconet_irq_flank_rise();
 }
 
 //-----------------------------------------------------------------------------
