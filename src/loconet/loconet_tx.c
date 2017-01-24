@@ -154,6 +154,15 @@ static LOCONET_MESSAGE_Type *loconet_build_message(uint8_t length)
 }
 
 //-----------------------------------------------------------------------------
+uint16_t loconet_tx_queue_size(void)
+{
+  uint16_t length = 0;
+  LOCONET_MESSAGE_Type *curr = loconet_tx_queue;
+  for (; curr; length++, curr = curr->next);
+  return length;
+}
+
+//-----------------------------------------------------------------------------
 void loconet_tx_queue_0(uint8_t opcode, uint8_t priority)
 {
   LOCONET_MESSAGE_Type *message = loconet_build_message(2);

@@ -42,6 +42,10 @@ extern uint8_t loconet_tx_finished(void);
 extern void loconet_tx_process(void);
 
 //-----------------------------------------------------------------------------
+// Size of queue
+extern uint16_t loconet_tx_queue_size(void);
+
+//-----------------------------------------------------------------------------
 // Enqueue a message
 extern void loconet_tx_queue_0(uint8_t opcode, uint8_t priority);
 extern void loconet_tx_queue_2(uint8_t opcode, uint8_t priority, uint8_t  a, uint8_t b);
