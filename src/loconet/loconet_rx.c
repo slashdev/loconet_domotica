@@ -73,7 +73,7 @@ LOCONET_RX_DUMMY_0(idle);
 LOCONET_RX_DUMMY_2(loco_spd);
 LOCONET_RX_DUMMY_2(loco_dirf);
 LOCONET_RX_DUMMY_2(loco_snd);
-LOCONET_RX_DUMMY_2(sq_req);
+LOCONET_RX_DUMMY_2(sw_req);
 LOCONET_RX_DUMMY_2(sw_rep);
 LOCONET_RX_DUMMY_2(input_rep);
 LOCONET_RX_DUMMY_2(long_ack);
@@ -153,7 +153,7 @@ void (* const ln_messages_2[32])(uint8_t, uint8_t) = {
   loconet_rx_dummy_2,     // 0xAD
   loconet_rx_dummy_2,     // 0xAE
   loconet_rx_dummy_2,     // 0xAF
-  loconet_rx_sq_req,      // 0xB0
+  loconet_rx_sw_req,      // 0xB0
   loconet_rx_sw_rep,      // 0xB1
   loconet_rx_input_rep,   // 0xB2
   loconet_rx_dummy_2,     // 0xB3
