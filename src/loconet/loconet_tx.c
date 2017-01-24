@@ -163,7 +163,7 @@ uint16_t loconet_tx_queue_size(void)
 }
 
 //-----------------------------------------------------------------------------
-void loconet_tx_queue_0(uint8_t opcode, uint8_t priority)
+void loconet_tx_queue_2(uint8_t opcode, uint8_t priority)
 {
   LOCONET_MESSAGE_Type *message = loconet_build_message(2);
   // Set priority
@@ -175,7 +175,7 @@ void loconet_tx_queue_0(uint8_t opcode, uint8_t priority)
   loconet_tx_enqueue(message);
 }
 
-void loconet_tx_queue_2(uint8_t opcode, uint8_t priority, uint8_t  a, uint8_t b)
+void loconet_tx_queue_4(uint8_t opcode, uint8_t priority, uint8_t  a, uint8_t b)
 {
   LOCONET_MESSAGE_Type *message = loconet_build_message(4);
   // Set priority
@@ -189,7 +189,7 @@ void loconet_tx_queue_2(uint8_t opcode, uint8_t priority, uint8_t  a, uint8_t b)
   loconet_tx_enqueue(message);
 }
 
-void loconet_tx_queue_4(uint8_t opcode, uint8_t priority, uint8_t  a, uint8_t b, uint8_t c, uint8_t d)
+void loconet_tx_queue_6(uint8_t opcode, uint8_t priority, uint8_t  a, uint8_t b, uint8_t c, uint8_t d)
 {
   LOCONET_MESSAGE_Type *message = loconet_build_message(6);
   // Set priority
