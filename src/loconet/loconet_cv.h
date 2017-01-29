@@ -14,6 +14,13 @@
 
 #include <stdint.h>
 
+#define LOCONET_CV_SRC_MASTER       0x00
+#define LOCONET_CV_SRC_KPU          0x01 // KPU is, e.g., an IntelliBox
+#define LOCONET_CV_SRC_UNDEFINED    0x02 // Unknown source
+#define LOCONET_CV_SRC_TWINBOX_FRED 0x03
+#define LOCONET_CV_SRC_IBSWITCH     0x04
+#define LOCONET_CV_SRC_MODULE       0x05
+
 typedef struct {
   uint8_t source;
   __attribute__((packed)) uint16_t destination;
@@ -24,5 +31,8 @@ typedef struct {
   __attribute__((packed)) uint16_t lncv_value;
   uint8_t flags;
 } LOCONET_CV_MSG_Type;
+
+//-----------------------------------------------------------------------------
+extern void loconet_cv_process(LOCONET_CV_MSG_Type*, uint8_t);
 
 #endif // _LOCONET_LOCONET_CV_H_

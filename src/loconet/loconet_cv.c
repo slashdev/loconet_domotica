@@ -10,3 +10,8 @@
  */
 
 #include "loconet_cv.h"
+
+//-----------------------------------------------------------------------------
+void loconet_cv_process(LOCONET_CV_MSG_Type *msg, uint8_t opcode)
+{
+}

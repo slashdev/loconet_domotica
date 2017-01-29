@@ -275,14 +275,26 @@ static void loconet_rx_wr_sl_data_(uint8_t *data, uint8_t length) {
 // Peer to peer transfer
 // Handle special cases
 static void loconet_rx_peer_xfer_(uint8_t *data, uint8_t length) {
-  loconet_rx_peer_xfer(data, length);
+  // Length 12 and source KPU, we take over the message
+  if (length == 0x0C && data[0] == LOCONET_CV_SRC_KPU) {
+    loconet_cv_process((LOCONET_CV_MSG_Type *)data, 0xE5);
+  } else {
+    // Call normal function
+    loconet_rx_peer_xfer(data, length);
+  }
 }
 
 //-----------------------------------------------------------------------------
 // IMM Packet
 // Handle special cases
 static void loconet_rx_imm_packet_(uint8_t *data, uint8_t length) {
-  loconet_rx_imm_packet(data, length);
+  // Length 12 and source KPU, we take over the message
+  if (length == 0x0C && data[0] == LOCONET_CV_SRC_KPU) {
+    loconet_cv_process((LOCONET_CV_MSG_Type *)data, 0xED);
+  } else {
+    // Call normal function
+    loconet_rx_imm_packet(data, length);
+  }
 }
 
 //-----------------------------------------------------------------------------
