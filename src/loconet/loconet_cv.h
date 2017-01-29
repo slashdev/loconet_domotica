@@ -13,6 +13,7 @@
 #define _LOCONET_LOCONET_CV_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #define LOCONET_CV_MAX_SIZE         0x1E  // 30
 // /Dev device class: 12100 (/D)

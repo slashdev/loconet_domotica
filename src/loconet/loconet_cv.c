@@ -12,10 +12,19 @@
 #include "loconet_cv.h"
 
 uint16_t loconet_cv_values[LOCONET_CV_MAX_SIZE];
+bool loconet_cv_programming;
 
 //-----------------------------------------------------------------------------
 static void loconet_cv_prog_on(LOCONET_CV_MSG_Type *msg)
 {
+  // lncv_number should be 0, and lncv_value should be 0xFFFF
+  // or the address of the device.
+  if (msg->lncv_number != 0 || (msg->lncv_value != 0xFFFF && msg->lncv_value != loconet_cv_values[0])) {
+    return;
+  }
+
+  // Start programming
+  loconet_cv_programming = true;
 }
 
 //-----------------------------------------------------------------------------
@@ -55,4 +64,6 @@ void loconet_cv_init(void)
 {
   // TODO: read CV values from eeprom
   loconet_cv_values[0] = LOCONET_CV_INITIAL_ADDRESS;
+  // Disable programming on init
+  loconet_cv_programming = false;
 }
