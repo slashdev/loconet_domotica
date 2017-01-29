@@ -90,6 +90,8 @@ LOCONET_RX_DUMMY_2(loco_adr);
 //-----------------------------------------------------------------------------
 LOCONET_RX_DUMMY_N(wr_sl_data);
 LOCONET_RX_DUMMY_N(rd_sl_data);
+LOCONET_RX_DUMMY_N(peer_xfer);
+LOCONET_RX_DUMMY_N(imm_packet);
 LOCONET_RX_DUMMY_N(prog_task_start);
 LOCONET_RX_DUMMY_N(prog_task_final);
 LOCONET_RX_DUMMY_N(fast_clock);
@@ -98,6 +100,8 @@ LOCONET_RX_DUMMY_N(fast_clock);
 // Special handlers which cannot be overriden
 static void loconet_rx_wr_sl_data_(uint8_t*, uint8_t);
 static void loconet_rx_rd_sl_data_(uint8_t*, uint8_t);
+static void loconet_rx_peer_xfer_(uint8_t*, uint8_t);
+static void loconet_rx_imm_packet_(uint8_t*, uint8_t);
 
 //-----------------------------------------------------------------------------
 void (* const ln_messages_0[32])(void) = {
@@ -214,7 +218,7 @@ void (* const ln_messages_n[32])(uint8_t*, uint8_t) = {
   loconet_rx_dummy_n,     // 0xE2
   loconet_rx_dummy_n,     // 0xE3
   loconet_rx_dummy_n,     // 0xE4
-  loconet_rx_dummy_n,     // 0xE5
+  loconet_rx_peer_xfer_,  // 0xE5
   loconet_rx_dummy_n,     // 0xE6
   loconet_rx_rd_sl_data_, // 0xE7
   loconet_rx_dummy_n,     // 0xE8
@@ -222,7 +226,7 @@ void (* const ln_messages_n[32])(uint8_t*, uint8_t) = {
   loconet_rx_dummy_n,     // 0xEA
   loconet_rx_dummy_n,     // 0xEB
   loconet_rx_dummy_n,     // 0xEC
-  loconet_rx_dummy_n,     // 0xED
+  loconet_rx_imm_packet_, // 0xED
   loconet_rx_dummy_n,     // 0xEE
   loconet_rx_wr_sl_data_, // 0xEF
   loconet_rx_dummy_n,     // 0xF0
@@ -265,6 +269,20 @@ static void loconet_rx_wr_sl_data_(uint8_t *data, uint8_t length) {
   } else { // Default handler
     loconet_rx_wr_sl_data(data, length);
   }
+}
+
+//-----------------------------------------------------------------------------
+// Peer to peer transfer
+// Handle special cases
+static void loconet_rx_peer_xfer_(uint8_t *data, uint8_t length) {
+  loconet_rx_peer_xfer(data, length);
+}
+
+//-----------------------------------------------------------------------------
+// IMM Packet
+// Handle special cases
+static void loconet_rx_imm_packet_(uint8_t *data, uint8_t length) {
+  loconet_rx_imm_packet(data, length);
 }
 
 //-----------------------------------------------------------------------------
