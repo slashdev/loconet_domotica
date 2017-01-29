@@ -14,4 +14,7 @@
 //-----------------------------------------------------------------------------
 void loconet_cv_process(LOCONET_CV_MSG_Type *msg, uint8_t opcode)
 {
+  if (msg->device_class != LOCONET_CV_DEVICE_CLASS) {
+    return; // We only listen to our own device class
+  }
 }

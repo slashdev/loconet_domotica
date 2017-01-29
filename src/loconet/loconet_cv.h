@@ -14,6 +14,9 @@
 
 #include <stdint.h>
 
+// /Dev device class: 12100 (/D)
+#define LOCONET_CV_DEVICE_CLASS     0x4BA // We listen to 1210
+
 #define LOCONET_CV_SRC_MASTER       0x00
 #define LOCONET_CV_SRC_KPU          0x01 // KPU is, e.g., an IntelliBox
 #define LOCONET_CV_SRC_UNDEFINED    0x02 // Unknown source
