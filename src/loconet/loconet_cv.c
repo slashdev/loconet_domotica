@@ -77,6 +77,10 @@ static void loconet_cv_prog_read(LOCONET_CV_MSG_Type *msg, uint8_t opcode)
 //-----------------------------------------------------------------------------
 static void loconet_cv_prog_write(LOCONET_CV_MSG_Type *msg, uint8_t opcode)
 {
+  // Write is not allowed if we're not in programming mode
+  if (!loconet_cv_programming) {
+    return;
+  }
 }
 
 //-----------------------------------------------------------------------------
