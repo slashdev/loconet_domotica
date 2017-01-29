@@ -76,6 +76,8 @@ static void loconet_cv_prog_read(LOCONET_CV_MSG_Type *msg, uint8_t opcode)
     loconet_tx_long_ack(opcode, LOCONET_CV_ACK_ERROR_OUTOFRANGE);
     return;
   }
+
+  loconet_cv_response(msg);
 }
 
 //-----------------------------------------------------------------------------
