@@ -11,6 +11,8 @@
 
 #include "loconet_cv.h"
 
+uint16_t loconet_cv_values[LOCONET_CV_MAX_SIZE];
+
 //-----------------------------------------------------------------------------
 static void loconet_cv_prog_on(LOCONET_CV_MSG_Type *msg)
 {
@@ -46,4 +48,11 @@ void loconet_cv_process(LOCONET_CV_MSG_Type *msg, uint8_t opcode)
   } else {
     loconet_cv_prog_read(msg, opcode);
   }
+}
+
+//-----------------------------------------------------------------------------
+void loconet_cv_init(void)
+{
+  // TODO: read CV values from eeprom
+  loconet_cv_values[0] = LOCONET_CV_INITIAL_ADDRESS;
 }

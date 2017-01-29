@@ -14,8 +14,10 @@
 
 #include <stdint.h>
 
+#define LOCONET_CV_MAX_SIZE         0x1E  // 30
 // /Dev device class: 12100 (/D)
 #define LOCONET_CV_DEVICE_CLASS     0x4BA // We listen to 1210
+#define LOCONET_CV_INITIAL_ADDRESS  0x03  // Initial address we listen to
 
 #define LOCONET_CV_SRC_MASTER       0x00
 #define LOCONET_CV_SRC_KPU          0x01 // KPU is, e.g., an IntelliBox
@@ -45,5 +47,8 @@ typedef struct {
 
 //-----------------------------------------------------------------------------
 extern void loconet_cv_process(LOCONET_CV_MSG_Type*, uint8_t);
+
+//-----------------------------------------------------------------------------
+extern void loconet_cv_init(void);
 
 #endif // _LOCONET_LOCONET_CV_H_
