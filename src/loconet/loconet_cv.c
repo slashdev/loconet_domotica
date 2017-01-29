@@ -30,6 +30,8 @@ static void loconet_cv_prog_on(LOCONET_CV_MSG_Type *msg)
 //-----------------------------------------------------------------------------
 static void loconet_cv_prog_off(LOCONET_CV_MSG_Type *msg)
 {
+  (void)msg;
+  loconet_cv_programming = false;
 }
 
 //-----------------------------------------------------------------------------
