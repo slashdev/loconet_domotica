@@ -72,6 +72,10 @@ static void loconet_cv_prog_off(LOCONET_CV_MSG_Type *msg)
 //-----------------------------------------------------------------------------
 static void loconet_cv_prog_read(LOCONET_CV_MSG_Type *msg, uint8_t opcode)
 {
+  if (msg->lncv_number >= LOCONET_CV_MAX_SIZE) {
+    loconet_tx_long_ack(opcode, LOCONET_CV_ACK_ERROR_OUTOFRANGE);
+    return;
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -79,6 +83,12 @@ static void loconet_cv_prog_write(LOCONET_CV_MSG_Type *msg, uint8_t opcode)
 {
   // Write is not allowed if we're not in programming mode
   if (!loconet_cv_programming) {
+    return;
+  }
+
+  // Error if you want to write out of bounds
+  if (msg->lncv_number >= LOCONET_CV_MAX_SIZE) {
+    loconet_tx_long_ack(opcode, LOCONET_CV_ACK_ERROR_OUTOFRANGE);
     return;
   }
 }

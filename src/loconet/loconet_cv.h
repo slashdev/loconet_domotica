@@ -15,6 +15,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "loconet_tx.h"
+#include "loconet_tx_messages.h"
 
 #define LOCONET_CV_MAX_SIZE         0x1E  // 30
 // /Dev device class: 12100 (/D)
@@ -40,6 +41,12 @@
 #define LOCONET_CV_FLG_PROG_ON      0x80
 #define LOCONET_CV_FLG_PROG_OFF     0x40
 #define LOCONET_CV_FLG_READ_ONLY    0x01
+
+#define LOCONET_CV_ACK_ERROR_GENERIC       0x00 // Error-codes for write-requests
+#define LOCONET_CV_ACK_ERROR_OUTOFRANGE    0x01 // Value out of range
+#define LOCONET_CV_ACK_ERROR_READONLY      0x02 // CV is read only
+#define LOCONET_CV_ACK_ERROR_INVALID_VALUE 0x03 // Unsupported/non-existing CV
+#define LOCONET_CV_ACK_OK                  0x7F // Everything OK
 
 typedef struct {
   uint8_t source;

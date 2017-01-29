@@ -78,5 +78,5 @@ void loconet_tx_input_rep(uint16_t address, bool state)
 
 void loconet_tx_long_ack(uint8_t lopc, uint8_t ack1)
 {
-  loconet_tx_queue_4(0xB4, 1, lopc, ack1);
+  loconet_tx_queue_4(0xB4, 1, lopc & 0x7F, ack1 & 0x7F);
 }
