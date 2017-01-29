@@ -272,11 +272,21 @@ static void loconet_rx_wr_sl_data_(uint8_t *data, uint8_t length) {
 }
 
 //-----------------------------------------------------------------------------
+// Fix most significant bits for LNCV messages from an IntelliBox
+static void loconet_fix_msb(uint8_t msb, uint8_t *data, uint8_t length)
+{
+  for (uint8_t index = 0; index < length; index++) {
+    *data++ |= ((msb & (1 << index)) << (length - index));
+  }
+}
+
+//-----------------------------------------------------------------------------
 // Peer to peer transfer
 // Handle special cases
 static void loconet_rx_peer_xfer_(uint8_t *data, uint8_t length) {
   // Length 12 and source KPU, we take over the message
   if (length == 0x0C && data[0] == LOCONET_CV_SRC_KPU) {
+    loconet_fix_msb(data[4], &data[5], 7);
     loconet_cv_process((LOCONET_CV_MSG_Type *)data, 0xE5);
   } else {
     // Call normal function
@@ -290,6 +300,7 @@ static void loconet_rx_peer_xfer_(uint8_t *data, uint8_t length) {
 static void loconet_rx_imm_packet_(uint8_t *data, uint8_t length) {
   // Length 12 and source KPU, we take over the message
   if (length == 0x0C && data[0] == LOCONET_CV_SRC_KPU) {
+    loconet_fix_msb(data[4], &data[5], 7);
     loconet_cv_process((LOCONET_CV_MSG_Type *)data, 0xED);
   } else {
     // Call normal function
