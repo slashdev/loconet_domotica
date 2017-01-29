@@ -24,6 +24,14 @@
 #define LOCONET_CV_SRC_IBSWITCH     0x04
 #define LOCONET_CV_SRC_MODULE       0x05
 
+#define LOCONET_CV_REQ_CFGREAD      0x1F
+#define LOCONET_CV_REQ_CFGWRITE     0x20
+#define LOCONET_CV_REQ_CFGREQUEST   0x21
+
+#define LOCONET_CV_FLG_PROG_ON      0x80
+#define LOCONET_CV_FLG_PROG_OFF     0x40
+#define LOCONET_CV_FLG_READ_ONLY    0x01
+
 typedef struct {
   uint8_t source;
   __attribute__((packed)) uint16_t destination;
