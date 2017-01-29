@@ -15,6 +15,40 @@ uint16_t loconet_cv_values[LOCONET_CV_MAX_SIZE];
 bool loconet_cv_programming;
 
 //-----------------------------------------------------------------------------
+static void loconet_cv_response(LOCONET_CV_MSG_Type *msg)
+{
+  uint8_t resp_data[13];
+  resp_data[0] = 15; // Length
+
+  LOCONET_CV_MSG_Type *resp = (LOCONET_CV_MSG_Type*)&resp_data[1];
+  resp->source = LOCONET_CV_SRC_MODULE;
+  switch (msg->source) {
+    case LOCONET_CV_SRC_KPU:
+      resp->destination = LOCONET_CV_DST_UB_KPU;
+      break;
+    default:
+      resp->destination = msg->source;
+  }
+  resp->request_id = LOCONET_CV_REQ_CFGREAD;
+  resp->device_class = msg->device_class;
+  resp->lncv_number = msg->lncv_number;
+  resp->lncv_value = loconet_cv_values[msg->lncv_number];
+  resp->flags = 0; // Always 0 for responses
+
+  // Calculate Most Significant Bits
+  resp->most_significant_bits = 0;
+  for (uint8_t index = 0; index < 7; index++) {
+    if (resp_data[6+index] & 0x80) {
+      resp->most_significant_bits |= 0x01 << index;
+      resp_data[6+index] &= 0x7F;
+    }
+  }
+
+  // Send message
+  loconet_tx_queue_n(0xE5, 1, resp_data, 13);
+}
+
+//-----------------------------------------------------------------------------
 static void loconet_cv_prog_on(LOCONET_CV_MSG_Type *msg)
 {
   // lncv_number should be 0, and lncv_value should be 0xFFFF
@@ -25,6 +59,7 @@ static void loconet_cv_prog_on(LOCONET_CV_MSG_Type *msg)
 
   // Start programming
   loconet_cv_programming = true;
+  loconet_cv_response(msg);
 }
 
 //-----------------------------------------------------------------------------

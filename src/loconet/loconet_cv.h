@@ -14,6 +14,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "loconet_tx.h"
 
 #define LOCONET_CV_MAX_SIZE         0x1E  // 30
 // /Dev device class: 12100 (/D)
@@ -26,6 +27,11 @@
 #define LOCONET_CV_SRC_TWINBOX_FRED 0x03
 #define LOCONET_CV_SRC_IBSWITCH     0x04
 #define LOCONET_CV_SRC_MODULE       0x05
+
+#define LOCONET_CV_DST_BROADCAST    0x0000
+#define LOCONET_CV_DST_UB_SPU       0x4249
+#define LOCONET_CV_DST_UB_KPU       0x4B49
+#define LOCONET_CV_DST_MODULE       0x0005
 
 #define LOCONET_CV_REQ_CFGREAD      0x1F
 #define LOCONET_CV_REQ_CFGWRITE     0x20
