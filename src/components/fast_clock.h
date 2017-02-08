@@ -47,8 +47,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include "loconet/loconet_rx.h"
-#include "loconet/loconet_tx.h"
+#include "loconet/loconet_tx_messages.h"
 #include "utils/logger.h"
 
 // ------------------------------------------------------------------
@@ -109,9 +108,5 @@ extern void fast_clock_init_timer(Tc*, uint32_t, uint32_t);
 // ------------------------------------------------------------------
 // reacts on the fast clock messages to update the internal clock.
 extern void loconet_rx_fast_clock(uint8_t *data, uint8_t length);
-
-// ------------------------------------------------------------------
-// TODO: Move to loconet_tx_messages.h
-extern void loconet_tx_fast_clock(uint8_t clk_rate, uint8_t frac_minsl, uint8_t frac_minsh, uint8_t minutes, uint8_t hours, uint8_t days, uint8_t id1, uint8_t id2); // 0xEF
 
 #endif // _LOCONET_FAST_CLOCK_H_

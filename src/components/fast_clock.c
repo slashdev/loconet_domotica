@@ -286,25 +286,3 @@ void fast_clock_handle_update_(uint8_t day, uint8_t hour, uint8_t minute)
   print_time(day, hour, minute);
 }
 
-// ----------------------------------------------------------------------------
-// TODO: Move to loconet_tx_messages.c
-void loconet_tx_fast_clock(uint8_t clk_rate, uint8_t frac_minsl, uint8_t frac_minsh, uint8_t minutes, uint8_t hours, uint8_t days, uint8_t id1, uint8_t id2)
-{
-  uint8_t length = 11;
-  uint8_t data[length];
-
-  data[0] = 0x7B; // address of the clock
-  data[1] = clk_rate;
-  data[2] = frac_minsl;
-  data[3] = frac_minsh;
-
-  data[4] = minutes + (128-60);
-  data[5] = 0x06; // trk
-  data[6] = hours + (128-24);
-  data[7] = days;
-  data[8] = 0x40; // it is a valid clock setting!
-  data[9] = id1;
-  data[10] = id2;
-
-  loconet_tx_queue_n(0xEF, 10, data, length);
-}

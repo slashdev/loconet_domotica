@@ -30,4 +30,9 @@ extern void loconet_tx_sw_rep(uint16_t address, bool state);           // 0xB1
 extern void loconet_tx_input_rep(uint16_t address, bool state);        // 0xB2
 extern void loconet_tx_long_ack(uint8_t lopc, uint8_t ack1);           // 0xB4
 
+
+// n bytes messages
+extern void loconet_tx_fast_clock(uint8_t clk_rate, uint8_t frac_minsl, uint8_t frac_minsh, uint8_t minutes, uint8_t hours, uint8_t days, uint8_t id1, uint8_t id2); // 0xEF
+
+
 #endif // _LOCONET_LOCONET_TX_MESSAGES_H_
