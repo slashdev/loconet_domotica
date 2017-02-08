@@ -137,6 +137,8 @@ static void fast_clock_set(uint8_t day, uint8_t hour, uint8_t minute)
   fast_clock_status.hour = hour % 24;
   fast_clock_status.minute = minute % 60;
 
+  fast_clock_status.second = 0;
+
   logger_string("RECEIVED: ");
   fast_clock_handle_update(fast_clock_status.day, fast_clock_status.hour, fast_clock_status.minute);
 }
