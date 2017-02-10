@@ -102,7 +102,7 @@ void fast_clock_init_timer(Tc *timer, uint32_t pm_tmr_mask, uint32_t gclock_tmr_
    */
   fast_clock_timer->COUNT16.CTRLA.reg =
     TC_CTRLA_PRESCSYNC_RESYNC
-    | TC_CTRLA_PRESCALER_DIV8
+    | TC_CTRLA_PRESCALER_DIV1024
     | TC_CTRLA_WAVEGEN_MFRQ
     | TC_CTRLA_MODE_COUNT16;
 
