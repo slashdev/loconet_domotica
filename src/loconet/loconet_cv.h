@@ -19,7 +19,6 @@
 #include "utils/eeprom.h"
 #include "utils/status_codes.h"
 
-#define LOCONET_CV_MAX_SIZE         0x1E  // 30
 #define LOCONET_CV_NUMBERS          0x1E  // 30
 #define LOCONET_CV_PER_PAGE         0x1E  // 30
 #define LOCONET_CV_PAGE_SIZE        (EEPROM_PAGE_SIZE / 2)

@@ -11,7 +11,6 @@
 
 #include "loconet_cv.h"
 
-uint16_t loconet_cv_values[LOCONET_CV_MAX_SIZE];
 uint16_t lncv_address;
 bool loconet_cv_programming;
 
@@ -95,7 +94,7 @@ static void loconet_cv_prog_off(LOCONET_CV_MSG_Type *msg)
 //-----------------------------------------------------------------------------
 static void loconet_cv_prog_read(LOCONET_CV_MSG_Type *msg, uint8_t opcode)
 {
-  if (msg->lncv_number >= LOCONET_CV_MAX_SIZE) {
+  if (msg->lncv_number >= LOCONET_CV_NUMBERS) {
     loconet_tx_long_ack(opcode, LOCONET_CV_ACK_ERROR_OUTOFRANGE);
     return;
   }
