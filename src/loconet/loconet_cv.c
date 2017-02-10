@@ -54,7 +54,7 @@ static void loconet_cv_response(LOCONET_CV_MSG_Type *msg)
   resp->request_id = LOCONET_CV_REQ_CFGREAD;
   resp->device_class = msg->device_class;
   resp->lncv_number = msg->lncv_number;
-  resp->lncv_value = loconet_cv_values[msg->lncv_number];
+  resp->lncv_value = loconet_cv_get(msg->lncv_number);
   resp->flags = 0; // Always 0 for responses
 
   // Calculate Most Significant Bits
