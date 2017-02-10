@@ -24,6 +24,18 @@ __attribute__ ((weak, alias ("loconet_cv_prog_off_event_dummy"))) \
   void loconet_cv_prog_off_event(void);
 
 //-----------------------------------------------------------------------------
+uint8_t loconet_cv_write_allowed_dummy(uint16_t, uint16_t);
+uint8_t loconet_cv_write_allowed_dummy(uint16_t lncv_number, uint16_t value)
+{
+  (void)lncv_number;
+  (void)value;
+  return LOCONET_CV_ACK_OK;
+}
+
+__attribute__ ((weak, alias ("loconet_cv_write_allowed_dummy"))) \
+  uint8_t loconet_cv_write_allowed(uint16_t, uint16_t);
+
+//-----------------------------------------------------------------------------
 static void loconet_cv_response(LOCONET_CV_MSG_Type *msg)
 {
   uint8_t resp_data[13];
@@ -140,6 +152,42 @@ uint16_t loconet_cv_get(uint16_t lncv_number)
   } else {
     return page_data[lncv_number % LOCONET_CV_PER_PAGE];
   }
+}
+
+//-----------------------------------------------------------------------------
+uint8_t loconet_cv_set(uint16_t lncv_number, uint16_t lncv_value)
+{
+  // Do not allow to write to number 1
+  if (lncv_number == 1) {
+    return LOCONET_CV_ACK_ERROR_READONLY;
+  // Do not allow to write out of bounds
+  } else if (lncv_number >= LOCONET_CV_NUMBERS) {
+    return LOCONET_CV_ACK_ERROR_OUTOFRANGE;
+  }
+
+  // Is this write allowed?
+  uint8_t ack = loconet_cv_write_allowed(lncv_number, lncv_value);
+
+  uint8_t page = lncv_number / LOCONET_CV_PER_PAGE;
+  uint8_t index = lncv_number % LOCONET_CV_PER_PAGE;
+
+  uint16_t page_data[LOCONET_CV_PAGE_SIZE];
+  eeprom_emulator_read_page(page, (uint8_t *)page_data);
+
+  // Write value if it's allowed and different than the current stored value
+  if (ack == LOCONET_CV_ACK_OK && lncv_value != page_data[index]) {
+    page_data[index] = lncv_value;
+    if (lncv_number == 0) {
+      // Set magic value to detect we have configured the address.
+      page_data[1] = LOCONET_CV_DEVICE_CLASS;
+      // Change lncv_address
+      lncv_address = lncv_value;
+    }
+    eeprom_emulator_write_page(page, (uint8_t *)page_data);
+    eeprom_emulator_commit_page_buffer();
+  }
+
+  return ack;
 }
 
 //-----------------------------------------------------------------------------

@@ -71,6 +71,9 @@ extern void loconet_cv_process(LOCONET_CV_MSG_Type*, uint8_t);
 extern uint16_t loconet_cv_get(uint16_t);
 
 //-----------------------------------------------------------------------------
+extern uint8_t loconet_cv_set(uint16_t, uint16_t);
+
+//-----------------------------------------------------------------------------
 extern enum status_code loconet_cv_init(void);
 
 #endif // _LOCONET_LOCONET_CV_H_
