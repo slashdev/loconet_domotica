@@ -96,7 +96,7 @@ void loconet_tx_fast_clock(uint8_t clk_rate, uint8_t frac_minsl, uint8_t frac_mi
   data[5] = 0x06; // trk
   data[6] = hours + (128-24);
   data[7] = days;
-  data[8] = 0x40; // it is a valid clock setting!
+  data[8] = 0x01; // it is a valid clock setting!
   data[9] = id1;
   data[10] = id2;
 

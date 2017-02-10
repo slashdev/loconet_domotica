@@ -160,7 +160,7 @@ void loconet_rx_fast_clock(uint8_t *data, uint8_t length)
     return;
   }
 
-  if (!(data[7] & 0x40)) {
+  if (!(data[7] == 1)) {
     // the message is not a correct clock tick!
     return;
   }
