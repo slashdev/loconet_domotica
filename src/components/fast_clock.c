@@ -214,6 +214,7 @@ void fast_clock_tick(void)
   while (fast_clock_status.second > 60)
   {
     fast_clock_status.minute++;
+    fast_clock_status.second -= 60;
     notify = true;
   }
 
