@@ -123,6 +123,26 @@ void loconet_cv_process(LOCONET_CV_MSG_Type *msg, uint8_t opcode)
 }
 
 //-----------------------------------------------------------------------------
+uint16_t loconet_cv_get(uint16_t lncv_number)
+{
+  if (lncv_number >= LOCONET_CV_NUMBERS) {
+    return 0xFFFF;
+  }
+
+  // Read the page from Eeprom
+  uint16_t page_data[LOCONET_CV_PAGE_SIZE];
+  eeprom_emulator_read_page(lncv_number / LOCONET_CV_PER_PAGE, (uint8_t *)page_data);
+
+  // If lncv 1 does not contain the magic value (device class) then we assume the module has not
+  // been configured by the user. Thus we use the initial address as address to listen to.
+  if (lncv_number == 0 && page_data[1] != LOCONET_CV_DEVICE_CLASS) {
+    return LOCONET_CV_INITIAL_ADDRESS;
+  } else {
+    return page_data[lncv_number % LOCONET_CV_PER_PAGE];
+  }
+}
+
+//-----------------------------------------------------------------------------
 enum status_code loconet_cv_init(void)
 {
   // TODO: read CV values from eeprom

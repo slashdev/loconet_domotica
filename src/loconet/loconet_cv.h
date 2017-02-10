@@ -20,6 +20,9 @@
 #include "utils/status_codes.h"
 
 #define LOCONET_CV_MAX_SIZE         0x1E  // 30
+#define LOCONET_CV_NUMBERS          0x1E  // 30
+#define LOCONET_CV_PER_PAGE         0x1E  // 30
+#define LOCONET_CV_PAGE_SIZE        (EEPROM_PAGE_SIZE / 2)
 // /Dev device class: 12100 (/D)
 #define LOCONET_CV_DEVICE_CLASS     0x4BA // We listen to 1210
 #define LOCONET_CV_INITIAL_ADDRESS  0x03  // Initial address we listen to
@@ -63,6 +66,9 @@ typedef struct {
 
 //-----------------------------------------------------------------------------
 extern void loconet_cv_process(LOCONET_CV_MSG_Type*, uint8_t);
+
+//-----------------------------------------------------------------------------
+extern uint16_t loconet_cv_get(uint16_t);
 
 //-----------------------------------------------------------------------------
 extern enum status_code loconet_cv_init(void);
