@@ -123,10 +123,18 @@ void loconet_cv_process(LOCONET_CV_MSG_Type *msg, uint8_t opcode)
 }
 
 //-----------------------------------------------------------------------------
-void loconet_cv_init(void)
+enum status_code loconet_cv_init(void)
 {
   // TODO: read CV values from eeprom
   loconet_cv_values[0] = LOCONET_CV_INITIAL_ADDRESS;
+
+  // Check if Eeprom is initialized
+  struct eeprom_emulator_parameters eeprom_parameters;
+  if (eeprom_emulator_get_parameters(&eeprom_parameters) == STATUS_ERR_NOT_INITIALIZED) {
+    return STATUS_ERR_NOT_INITIALIZED;
+  }
   // Disable programming on init
   loconet_cv_programming = false;
+
+  return STATUS_OK;
 }

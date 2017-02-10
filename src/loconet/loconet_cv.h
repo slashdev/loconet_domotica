@@ -16,6 +16,8 @@
 #include <stdbool.h>
 #include "loconet_tx.h"
 #include "loconet_tx_messages.h"
+#include "utils/eeprom.h"
+#include "utils/status_codes.h"
 
 #define LOCONET_CV_MAX_SIZE         0x1E  // 30
 // /Dev device class: 12100 (/D)
@@ -63,6 +65,6 @@ typedef struct {
 extern void loconet_cv_process(LOCONET_CV_MSG_Type*, uint8_t);
 
 //-----------------------------------------------------------------------------
-extern void loconet_cv_init(void);
+extern enum status_code loconet_cv_init(void);
 
 #endif // _LOCONET_LOCONET_CV_H_
