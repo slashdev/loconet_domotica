@@ -33,6 +33,7 @@
 #include <string.h>
 #include "samd20.h"
 #include "hal_gpio.h"
+#include "loconet/loconet_cv.h"
 #include "utils/eeprom.h"
 
 //-----------------------------------------------------------------------------
@@ -87,6 +88,9 @@ int main(void)
   HAL_GPIO_LED_out();
   // Turn on the LED
   HAL_GPIO_LED_set();
+
+  // Initialize CVs for loconet
+  loconet_cv_init();
 
   while (1);
   return 0;
