@@ -93,7 +93,7 @@ extern void fast_clock_init_timer(Tc*, uint32_t, uint32_t);
     fast_clock_init_timer(                                                    \
       TC##timer,                                                              \
       PM_APBCMASK_TC##timer,                                                  \
-      TC##timer##_GLCK_ID                                                     \
+      TC##timer##_GCLK_ID                                                     \
     );                                                                        \
   }                                                                           \
   /* Handle timer interrupt */                                                \
@@ -101,7 +101,7 @@ extern void fast_clock_init_timer(Tc*, uint32_t, uint32_t);
   void irq_handler_tc##timer(void)                                            \
   {                                                                           \
     /* Reset clock interrupt flag */                                          \
-    TC##fl_tmr->COUNT16.INTFLAG.reg = TC_INTFLAG_MC(1);                       \
+    TC##timer->COUNT16.INTFLAG.reg = TC_INTFLAG_MC(1);                        \
     fast_clock_tick();                                                        \
   }                                                                           \
 
