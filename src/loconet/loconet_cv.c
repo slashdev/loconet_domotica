@@ -15,6 +15,15 @@ uint16_t loconet_cv_values[LOCONET_CV_MAX_SIZE];
 bool loconet_cv_programming;
 
 //-----------------------------------------------------------------------------
+void loconet_cv_prog_off_event_dummy(void);
+void loconet_cv_prog_off_event_dummy(void)
+{
+}
+
+__attribute__ ((weak, alias ("loconet_cv_prog_off_event_dummy"))) \
+  void loconet_cv_prog_off_event(void);
+
+//-----------------------------------------------------------------------------
 static void loconet_cv_response(LOCONET_CV_MSG_Type *msg)
 {
   uint8_t resp_data[13];
@@ -67,6 +76,7 @@ static void loconet_cv_prog_off(LOCONET_CV_MSG_Type *msg)
 {
   (void)msg;
   loconet_cv_programming = false;
+  loconet_cv_prog_off_event();
 }
 
 //-----------------------------------------------------------------------------
