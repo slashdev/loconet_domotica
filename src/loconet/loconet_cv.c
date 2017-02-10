@@ -12,6 +12,7 @@
 #include "loconet_cv.h"
 
 uint16_t loconet_cv_values[LOCONET_CV_MAX_SIZE];
+uint16_t lncv_address;
 bool loconet_cv_programming;
 
 //-----------------------------------------------------------------------------
@@ -74,7 +75,7 @@ static void loconet_cv_prog_on(LOCONET_CV_MSG_Type *msg)
 {
   // lncv_number should be 0, and lncv_value should be 0xFFFF
   // or the address of the device.
-  if (msg->lncv_number != 0 || (msg->lncv_value != 0xFFFF && msg->lncv_value != loconet_cv_values[0])) {
+  if (msg->lncv_number != 0 || (msg->lncv_value != 0xFFFF && msg->lncv_value != lncv_address)) {
     return;
   }
 
@@ -193,14 +194,15 @@ uint8_t loconet_cv_set(uint16_t lncv_number, uint16_t lncv_value)
 //-----------------------------------------------------------------------------
 enum status_code loconet_cv_init(void)
 {
-  // TODO: read CV values from eeprom
-  loconet_cv_values[0] = LOCONET_CV_INITIAL_ADDRESS;
-
   // Check if Eeprom is initialized
   struct eeprom_emulator_parameters eeprom_parameters;
   if (eeprom_emulator_get_parameters(&eeprom_parameters) == STATUS_ERR_NOT_INITIALIZED) {
     return STATUS_ERR_NOT_INITIALIZED;
   }
+
+  // Get address from Eeprom
+  lncv_address = loconet_cv_get(0);
+
   // Disable programming on init
   loconet_cv_programming = false;
 
