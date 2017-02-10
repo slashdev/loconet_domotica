@@ -90,6 +90,8 @@ LOCONET_RX_DUMMY_2(loco_adr);
 //-----------------------------------------------------------------------------
 LOCONET_RX_DUMMY_N(wr_sl_data);
 LOCONET_RX_DUMMY_N(rd_sl_data);
+LOCONET_RX_DUMMY_N(peer_xfer);
+LOCONET_RX_DUMMY_N(imm_packet);
 LOCONET_RX_DUMMY_N(prog_task_start);
 LOCONET_RX_DUMMY_N(prog_task_final);
 LOCONET_RX_DUMMY_N(fast_clock);
@@ -98,6 +100,8 @@ LOCONET_RX_DUMMY_N(fast_clock);
 // Special handlers which cannot be overriden
 static void loconet_rx_wr_sl_data_(uint8_t*, uint8_t);
 static void loconet_rx_rd_sl_data_(uint8_t*, uint8_t);
+static void loconet_rx_peer_xfer_(uint8_t*, uint8_t);
+static void loconet_rx_imm_packet_(uint8_t*, uint8_t);
 
 //-----------------------------------------------------------------------------
 void (* const ln_messages_0[32])(void) = {
@@ -214,7 +218,7 @@ void (* const ln_messages_n[32])(uint8_t*, uint8_t) = {
   loconet_rx_dummy_n,     // 0xE2
   loconet_rx_dummy_n,     // 0xE3
   loconet_rx_dummy_n,     // 0xE4
-  loconet_rx_dummy_n,     // 0xE5
+  loconet_rx_peer_xfer_,  // 0xE5
   loconet_rx_dummy_n,     // 0xE6
   loconet_rx_rd_sl_data_, // 0xE7
   loconet_rx_dummy_n,     // 0xE8
@@ -222,7 +226,7 @@ void (* const ln_messages_n[32])(uint8_t*, uint8_t) = {
   loconet_rx_dummy_n,     // 0xEA
   loconet_rx_dummy_n,     // 0xEB
   loconet_rx_dummy_n,     // 0xEC
-  loconet_rx_dummy_n,     // 0xED
+  loconet_rx_imm_packet_, // 0xED
   loconet_rx_dummy_n,     // 0xEE
   loconet_rx_wr_sl_data_, // 0xEF
   loconet_rx_dummy_n,     // 0xF0
@@ -264,6 +268,43 @@ static void loconet_rx_wr_sl_data_(uint8_t *data, uint8_t length) {
     loconet_rx_prog_task_start(&data[1], length - 1);
   } else { // Default handler
     loconet_rx_wr_sl_data(data, length);
+  }
+}
+
+//-----------------------------------------------------------------------------
+// Fix most significant bits for LNCV messages from an IntelliBox
+static void loconet_fix_msb(uint8_t msb, uint8_t *data, uint8_t length)
+{
+  for (uint8_t index = 0; index < length; index++) {
+    *data++ |= ((msb & (1 << index)) << (length - index));
+  }
+}
+
+//-----------------------------------------------------------------------------
+// Peer to peer transfer
+// Handle special cases
+static void loconet_rx_peer_xfer_(uint8_t *data, uint8_t length) {
+  // Length 12 and source KPU, we take over the message
+  if (length == 0x0C && data[0] == LOCONET_CV_SRC_KPU) {
+    loconet_fix_msb(data[4], &data[5], 7);
+    loconet_cv_process((LOCONET_CV_MSG_Type *)data, 0xE5);
+  } else {
+    // Call normal function
+    loconet_rx_peer_xfer(data, length);
+  }
+}
+
+//-----------------------------------------------------------------------------
+// IMM Packet
+// Handle special cases
+static void loconet_rx_imm_packet_(uint8_t *data, uint8_t length) {
+  // Length 12 and source KPU, we take over the message
+  if (length == 0x0C && data[0] == LOCONET_CV_SRC_KPU) {
+    loconet_fix_msb(data[4], &data[5], 7);
+    loconet_cv_process((LOCONET_CV_MSG_Type *)data, 0xED);
+  } else {
+    // Call normal function
+    loconet_rx_imm_packet(data, length);
   }
 }
 
