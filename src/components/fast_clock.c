@@ -82,7 +82,7 @@ Tc *fast_clock_timer;
 
 // ----------------------------------------------------------------------------
 //
-void fast_clock_init_timer(Tc *timer, uint32_t pm_tmr_mask, uint32_t gclock_tmr_id)
+void fast_clock_init_timer(Tc *timer, uint32_t pm_tmr_mask, uint32_t gclock_tmr_id, uint32_t nvic_irqn)
 {
   fast_clock_timer = timer;
 
@@ -107,6 +107,7 @@ void fast_clock_init_timer(Tc *timer, uint32_t pm_tmr_mask, uint32_t gclock_tmr_
     | TC_CTRLA_MODE_COUNT16;
 
   fast_clock_timer->COUNT16.INTENSET.reg = TC_INTENSET_MC(1);
+  NVIC_EnableIRQ(nvic_irqn);
 
   fast_clock_timer->COUNT16.COUNT.reg = 0;
   fast_clock_timer->COUNT16.CC[0].reg = FAST_CLOCK_TIMER_DELAY;

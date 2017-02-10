@@ -85,7 +85,7 @@ extern void fast_clock_tick(void);
 
 // ------------------------------------------------------------------
 extern void fast_clock_init(void);
-extern void fast_clock_init_timer(Tc*, uint32_t, uint32_t);
+extern void fast_clock_init_timer(Tc*, uint32_t, uint32_t, uint32_t);
 
 #define FAST_CLOCK_BUILD(timer)                                               \
   void fast_clock_init(void)                                                  \
@@ -93,7 +93,8 @@ extern void fast_clock_init_timer(Tc*, uint32_t, uint32_t);
     fast_clock_init_timer(                                                    \
       TC##timer,                                                              \
       PM_APBCMASK_TC##timer,                                                  \
-      TC##timer##_GCLK_ID                                                     \
+      TC##timer##_GCLK_ID,                                                    \
+      TC##timer##_IRQn                                                        \
     );                                                                        \
   }                                                                           \
   /* Handle timer interrupt */                                                \
