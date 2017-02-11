@@ -233,22 +233,16 @@ void fast_clock_tick(void)
 
   if (notify)
   {
-    if (fast_clock_status.master)
-    {
-      if (fast_clock_status.intermessage_delay < fast_clock_current_intermessage_delay)
-      {
-        // Send the message!
-        fast_clock_send_message();
-        // Reset the intermessage delay
-        fast_clock_current_intermessage_delay = 0;
-      }
-      else
-      {
-        fast_clock_current_intermessage_delay++;
-      }
-    }
-
     fast_clock_handle_update(fast_clock_status.day, fast_clock_status.hour, fast_clock_status.minute);
+  }
+
+  // Do we need to send a message as master?
+  if (fast_clock_status.master && fast_clock_current_intermessage_delay++ > fast_clock_status.intermessage_delay)
+  {
+    // Send the message!
+    fast_clock_send_message();
+    // Reset the intermessage delay
+    fast_clock_current_intermessage_delay = 0;
   }
 }
 
