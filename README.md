@@ -92,7 +92,7 @@ Programming CV values using an Uhlenbrock Intellibox II is supported out of the 
 
 ## Address and priority
 
-It is important to realize that the loconet address (loconet_config.bit.ADDRESS) and CV 0 are not automatically coupled. One needs to ensure this coupling manually!
+It is important to realize that the loconet address (loconet_config.bit.ADDRESS) and CV 0 are not automatically coupled. This coupling needs to be done in the `main()` and before `loconet_init()` is called. This ensures proper listening to messages.
 
 ## Read CV values
 

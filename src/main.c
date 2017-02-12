@@ -99,12 +99,12 @@ int main(void)
   // Initialize CVs for loconet
   loconet_cv_init();
 
-  // Initialize loconet
-  loconet_init();
-
   // Set loconet basics
   loconet_config.bit.ADDRESS = loconet_cv_get(0);
   loconet_config.bit.PRIORITY = loconet_cv_get(2);
+
+  // Initialize loconet
+  loconet_init();
 
   while (1) {
     loconet_loop();
