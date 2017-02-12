@@ -54,7 +54,7 @@ In the main function of the project, ensure that you initialize loconet via 'loc
       ...
       // Initialize loconet
       loconet_init();
-
+......
       // Initialize CVs for loconet
       loconet_cv_init();
 ......
@@ -68,7 +68,7 @@ In the main function of the project, ensure that you initialize loconet via 'loc
         loconet_loop();
         ...
       }
-
+......
       return 0;
     }
 
