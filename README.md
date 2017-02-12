@@ -134,6 +134,15 @@ The return value should be either one of:
     // Everything is ok:
     LOCONET_CV_ACK_OK
 
+## Responding after a CV value changed
+
+After a CV value has been successfully written to the Eeprom, the system fires the loconet_cv_written_event, so that the program can update cached cv values. This should be implemented as follows:
+
+    void loconet_cv_written_event(uint16_t lncv_number, uint16_t value);
+    void loconet_cv_written_event(uint16_t lncv_number, uint16_t value) {
+      ...
+    }
+
 ## Responding after a programming session
 
 After a programming session to set some CV values, the system automatically calls the loconet_cv_prog_off_event, which can be overriden by the program via:
