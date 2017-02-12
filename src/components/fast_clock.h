@@ -95,7 +95,7 @@ extern uint16_t fast_clock_get_time_as_int(void);
 
 // ------------------------------------------------------------------
 // This is the IRQ function that is called after every clock cycle.
-extern void fast_clock_tick(void);
+extern void fast_clock_irq(void);
 
 // ------------------------------------------------------------------
 // This is the function that should be added to the main loop, as it
@@ -123,7 +123,7 @@ extern void fast_clock_init_timer(Tc*, uint32_t, uint32_t, uint32_t);
   {                                                                           \
     /* Reset clock interrupt flag */                                          \
     TC##timer->COUNT16.INTFLAG.reg = TC_INTFLAG_MC(1);                        \
-    fast_clock_tick();                                                        \
+    fast_clock_irq();                                                        \
   }                                                                           \
 
 // ------------------------------------------------------------------

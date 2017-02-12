@@ -171,7 +171,7 @@ static void fast_clock_send_message(void)
 // This function should be called every 50ms. It updates the clock with
 // the set rate.
 // When the timer is used via `fast_clock_init`, this is done automatically.
-void fast_clock_tick(void)
+void fast_clock_irq(void)
 {
   // Update the milliseconds passed with the clock rate As the millisecond
   // counter counts every 50ms, we have 200 cycles for a second. We speed up by
