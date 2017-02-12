@@ -70,13 +70,13 @@ In the main function of the project, ensure that you initialize loconet via 'loc
       // Initialize loconet
       loconet_init();
       ...
-      // Initialize CVs for loconet
-      loconet_cv_init();
-      ...
       // Set the loconet address
       loconet_config.bit.ADDRESS = loconet_cv_get(0);
       // Set the priority of this device
-      loconet_config.bit.PRIORITY = 3;
+      loconet_config.bit.PRIORITY = loconet_cv_get(2);
+      ...
+      // Initialize CVs for loconet
+      loconet_cv_init();
       ...
       while(1)
       {
