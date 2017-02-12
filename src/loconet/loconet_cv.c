@@ -36,6 +36,17 @@ __attribute__ ((weak, alias ("loconet_cv_write_allowed_dummy"))) \
   uint8_t loconet_cv_write_allowed(uint16_t, uint16_t);
 
 //-----------------------------------------------------------------------------
+void loconet_cv_written_event_dummy(uint16_t lncv_number, uint16_t value);
+void loconet_cv_written_event_dummy(uint16_t lncv_number, uint16_t value)
+{
+  (void)lncv_number;
+  (void)value;
+}
+
+__attribute__ ((weak, alias ("loconet_cv_written_event_dummy"))) \
+  void loconet_cv_written_event(uint16_t, uint16_t);
+
+//-----------------------------------------------------------------------------
 static void loconet_cv_response(LOCONET_CV_MSG_Type *msg)
 {
   uint8_t resp_data[13];
@@ -183,6 +194,7 @@ uint8_t loconet_cv_set(uint16_t lncv_number, uint16_t lncv_value)
     }
     eeprom_emulator_write_page(page, (uint8_t *)page_data);
     eeprom_emulator_commit_page_buffer();
+    loconet_cv_written_event(lncv_number, lncv_value);
   }
 
   return ack;
