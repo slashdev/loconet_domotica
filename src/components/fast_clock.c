@@ -83,12 +83,15 @@ void fast_clock_init_timer(Tc *timer, uint32_t pm_tmr_mask, uint32_t gclock_tmr_
 // Sets the values for being a master. Variables id1 and id2 are used for
 // identification of the clock, the intermessage delay is the time that is
 // between two messages.
-void fast_clock_set_master(uint8_t id1, uint8_t id2, uint16_t intermessage_delay)
+void fast_clock_set_master(uint8_t id1, uint8_t id2, uint8_t intermessage_delay)
 {
   fast_clock_status.master = true;
   fast_clock_status.id1 = id1;
   fast_clock_status.id2 = id2;
-  fast_clock_status.intermessage_delay = intermessage_delay;
+
+  // We multiply the intermessage delay with 200, as we increase the
+  // fast_clock_current_intermessage_delay every 50 ms.
+  fast_clock_status.intermessage_delay = 200 * intermessage_delay;
 }
 
 // ----------------------------------------------------------------------------
@@ -170,10 +173,6 @@ static void fast_clock_send_message(void)
 // When the timer is used via `fast_clock_init`, this is done automatically.
 void fast_clock_tick(void)
 {
-  // Keeps track whether we need an update. We only send an update
-  // if the minute counter has been increased.
-  bool notify = false;
-
   // Update the milliseconds passed with the clock rate As the millisecond
   // counter counts every 50ms, we have 200 cycles for a second. We speed up by
   // the fast rate, i.e., every ms now counts for rate ms. We could multiply
@@ -185,30 +184,47 @@ void fast_clock_tick(void)
 
   fast_clock_status.millisecond += fast_clock_status.rate;
 
+  // If we are master, update the intermessage delay.
+  if (fast_clock_status.master)
+  {
+    fast_clock_current_intermessage_delay++;
+  }
+}
+
+// ----------------------------------------------------------------------------
+// This function should be added to the main loop, as it handles the actual
+// update of the curent_time, instead of an IRQ.
+void fast_clock_loop(void)
+{
+
+  // Keeps track whether we need an update. We only send an update
+  // if the minute counter has been increased.
+  bool notify = false;
+
   if (fast_clock_status.millisecond >= 200) {
     fast_clock_status.millisecond -= 200;
     current_time.second++;
-  }
 
-  if(current_time.second > 59)
-  {
-    current_time.minute++;
-    current_time.second = 0;
-    notify = true;
-  }
+    if(current_time.second > 59)
+    {
+      current_time.minute++;
+      current_time.second = 0;
+      notify = true;
+    }
 
-  if (current_time.minute > 59)
-  {
-    current_time.minute = 0;
-    current_time.hour++;
-  }
+    if (current_time.minute > 59)
+    {
+      current_time.minute = 0;
+      current_time.hour++;
+    }
 
-  if (current_time.hour > 23)
-  {
-    current_time.hour = 0;
+    if (current_time.hour > 23)
+    {
+      current_time.hour = 0;
 
-    current_time.day++;
-    current_time.day %= 7;
+      current_time.day++;
+      current_time.day %= 7;
+    }
   }
 
   if (notify)
@@ -217,7 +233,7 @@ void fast_clock_tick(void)
   }
 
   // Do we need to send a message as master?
-  if (fast_clock_status.master && fast_clock_current_intermessage_delay++ > fast_clock_status.intermessage_delay)
+  if (fast_clock_status.master && fast_clock_current_intermessage_delay > fast_clock_status.intermessage_delay)
   {
     // Send the message!
     fast_clock_send_message();

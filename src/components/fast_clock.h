@@ -15,14 +15,14 @@
  * the fast clock messages itself. For this, set the appropriate values
  * using:
  *
- *    fast_clock_set_as_master(id1, id2, intermessage_delay)
+ *    fast_clock_set_master(id1, id2, intermessage_delay)
  *
  * id1 and id2 are used to identify the clock, the intermessage_delay
  * states the seconds between every two clock messages.
  *
  * To return to slave mode, use
  *
- *     fast_clock_set_as_slave();
+ *     fast_clock_set_slave();
  *
  * To use the clock system, one should initialize a clock using
  *
@@ -30,6 +30,12 @@
  *
  * Where
  * - timer: the TIMER used for fast clock
+ *
+ * Make sure that the main loop calls the function
+ *
+ *     fast_clock_loop();
+ *
+ * as this function is the main function that handles the time update.
  *
  * To react on clock changes, you should use the following function
  *
@@ -63,7 +69,7 @@ typedef struct {
 // identifying the master in clock messages.
 // The intermessage_delay is the delay in seconds between two
 // messages
-extern void fast_clock_set_master(uint8_t id1, uint8_t id2, uint16_t intermessage_delay);
+extern void fast_clock_set_master(uint8_t id1, uint8_t id2, uint8_t intermessage_delay);
 
 // ------------------------------------------------------------------
 // React on the clock messages as a slave, i.e. it does not send its
@@ -90,6 +96,12 @@ extern uint16_t fast_clock_get_time_as_int(void);
 // ------------------------------------------------------------------
 // This is the IRQ function that is called after every clock cycle.
 extern void fast_clock_tick(void);
+
+// ------------------------------------------------------------------
+// This is the function that should be added to the main loop, as it
+// handles the actual time update.
+extern void fast_clock_loop(void);
+
 
 // ------------------------------------------------------------------
 extern void fast_clock_init(void);
