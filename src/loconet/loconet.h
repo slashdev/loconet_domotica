@@ -68,6 +68,8 @@
 #include <string.h>
 #include "samd20.h"
 #include "hal_gpio.h"
+#include "loconet_rx.h"
+#include "loconet_tx.h"
 
 //-----------------------------------------------------------------------------
 // Give a warning if F_CPU is not 8MHz
@@ -98,6 +100,26 @@ typedef union {
 extern LOCONET_CONFIG_Type loconet_config;
 
 //-----------------------------------------------------------------------------
+typedef union {
+  struct {
+    uint8_t IDLE:1;
+    uint8_t TRANSMIT:1;
+    uint8_t COLLISION_DETECTED:1;
+    uint8_t :5;
+  } bit;
+  uint8_t reg;
+} LOCONET_STATUS_Type;
+
+#define LOCONET_STATUS_IDLE_Pos 0
+#define LOCONET_STATUS_IDLE (0x01ul << LOCONET_STATUS_IDLE_Pos)
+#define LOCONET_STATUS_TRANSMIT_Pos 1
+#define LOCONET_STATUS_TRANSMIT (0x01ul << LOCONET_STATUS_TRANSMIT_Pos)
+#define LOCONET_STATUS_COLLISION_DETECT_Pos 2
+#define LOCONET_STATUS_COLLISION_DETECT (0x01ul << LOCONET_STATUS_COLLISION_DETECT_Pos)
+
+extern LOCONET_STATUS_Type loconet_status;
+
+//-----------------------------------------------------------------------------
 // Initializations
 extern void loconet_init(void);
 extern void loconet_init_usart(Sercom*, uint32_t, uint32_t, uint8_t, uint32_t);
@@ -114,19 +136,18 @@ extern void loconet_irq_timer(void);
 // IRQ for sercom
 extern void loconet_irq_sercom(void);
 
-extern void loconet_handle_eic(void);
+extern uint8_t loconet_handle_eic(void);
 
 //-----------------------------------------------------------------------------
 // Loconet loop to be used in the main loop
 // Handles processing and sending of messages
 extern void loconet_loop(void);
 
+extern void loconet_sercom_enable_dre_irq(void);
+
 //-----------------------------------------------------------------------------
-// Enqueue a message
-extern void loconet_tx_queue_0(uint8_t opcode, uint8_t priority);
-extern void loconet_tx_queue_2(uint8_t opcode, uint8_t priority, uint8_t  a, uint8_t b);
-extern void loconet_tx_queue_4(uint8_t opcode, uint8_t priority, uint8_t  a, uint8_t b, uint8_t c, uint8_t d);
-extern void loconet_tx_queue_n(uint8_t opcode, uint8_t priority, uint8_t *d, uint8_t l);
+// Calculate checksum of a message
+extern uint8_t loconet_calc_checksum(uint8_t *data, uint8_t length);
 
 // Macro for loconet_init and irq_handler_sercom<nr>
 #define LOCONET_BUILD(sercom, tx_port, tx_pin, rx_port, rx_pin, rx_pad, fl_port, fl_pin, fl_int, fl_tmr) \
@@ -172,10 +193,10 @@ extern void loconet_tx_queue_n(uint8_t opcode, uint8_t priority, uint8_t *d, uin
       tx_pin                                                                  \
     );                                                                        \
   }                                                                           \
-  void loconet_handle_eic(void) {                                             \
+  uint8_t loconet_handle_eic(void) {                                          \
     /* Return if it's not our external pin to watch */                        \
     if (!EIC->INTFLAG.bit.EXTINT##fl_int) {                                   \
-      return;                                                                 \
+      return 0;                                                               \
     }                                                                         \
     /* Reset flag */                                                          \
     EIC->INTFLAG.reg |= EIC_INTFLAG_EXTINT##fl_int;                           \
@@ -185,6 +206,7 @@ extern void loconet_tx_queue_n(uint8_t opcode, uint8_t priority, uint8_t *d, uin
     } else {                                                                  \
       loconet_irq_flank_fall();                                               \
     }                                                                         \
+    return 1;                                                                 \
   }                                                                           \
   /* Handle timer interrupt */                                                \
   void irq_handler_tc##fl_tmr(void);                                          \
