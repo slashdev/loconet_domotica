@@ -33,9 +33,9 @@ typedef struct {
   uint8_t id2;
   uint16_t intermessage_delay;
   uint8_t rate;
-} fast_clock_STATUS_Type;
+} FAST_CLOCK_STATUS_Type;
 
-fast_clock_STATUS_Type fast_clock_status = {0, 0, 0, 0, 1};
+FAST_CLOCK_STATUS_Type fast_clock_status = {0, 0, 0, 0, 1};
 
 uint16_t fast_clock_current_intermessage_delay = 0;
 
