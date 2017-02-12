@@ -43,7 +43,9 @@ HAL_GPIO_PIN(LED, A, 12);
 //-----------------------------------------------------------------------------
 void irq_handler_eic(void);
 void irq_handler_eic(void) {
-  loconet_handle_eic();
+  if (loconet_handle_eic()) {
+    return;
+  }
 }
 
 //-----------------------------------------------------------------------------
