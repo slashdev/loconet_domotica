@@ -33,7 +33,7 @@
  *
  * To react on clock changes, you should use the following function
  *
- *     fast_clock_handle_update(days, hours, minutes)
+ *     fast_clock_handle_update(FAST_CLOCK_TIME_Type time)
  *
  * It is triggered after every update of the minute counter.
  *
@@ -59,15 +59,19 @@ typedef struct {
 
 
 // ------------------------------------------------------------------
+// Sets the fast_clock as master. It uses id1 and id2 for
+// identifying the master in clock messages.
+// The intermessage_delay is the delay in seconds between two
+// messages
 extern void fast_clock_set_as_master(uint8_t id1, uint8_t id2, uint16_t intermessage_delay);
 
 // ------------------------------------------------------------------
-// react on the clock messages as a slave, i.e. it does not send its
+// React on the clock messages as a slave, i.e. it does not send its
 // own time messages
 extern void fast_clock_set_as_slave(void);
 
 // ------------------------------------------------------------------
-// sets the rate for the clock message. Only useful to use in case
+// Sets the rate for the clock message. Only useful to use in case
 // the system acts as a clock master.
 extern void fast_clock_set_rate(uint8_t);
 
@@ -88,6 +92,7 @@ extern uint8_t fast_clock_get_hours(void);
 extern uint8_t fast_clock_get_day(void);
 
 // ------------------------------------------------------------------
+// Returns the current time as FAST_CLOCK_TIME_Type
 extern FAST_CLOCK_TIME_Type fast_clock_get_time(void);
 
 // ------------------------------------------------------------------
@@ -95,7 +100,7 @@ extern FAST_CLOCK_TIME_Type fast_clock_get_time(void);
 extern uint16_t fast_clock_get_time_as_int(void);
 
 // ------------------------------------------------------------------
-// Called every second
+// This is the IRQ function that is called after every clock cycle.
 extern void fast_clock_tick(void);
 
 // ------------------------------------------------------------------
@@ -122,7 +127,7 @@ extern void fast_clock_init_timer(Tc*, uint32_t, uint32_t, uint32_t);
   }                                                                           \
 
 // ------------------------------------------------------------------
-// reacts on the fast clock messages to update the internal clock.
+// Reacts on the fast clock messages to update the internal clock.
 extern void loconet_rx_fast_clock(uint8_t *data, uint8_t length);
 
 #endif // _LOCONET_FAST_CLOCK_H_
