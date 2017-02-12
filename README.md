@@ -26,11 +26,26 @@ To simplify the sending of messages, a set of default send messages are provided
 
 ### 1. Pins and timers
 
-To send and receive messages, the loconet module needs to know which pins, ports and timers can be used. We pass this information via the macro LOCONET_BUILD.
+To send and receive messages, the loconet module needs to know which pins, ports and timers can be used. We pass this information via the macro LOCONET_BUILD, with the parameters how you want use the SERCOM interface.
+The LOCONET_BUILD is structured as follows:
 
-For example, to write using pin 14, read on pin 15, and to use pin 13 for flank detection, together with timer 1, we write:
+    LOCONET_BUILD(sercom, tx_port, tx_pin, rx_port, rx_pin, rx_pad)
 
-    // Loconet: Tx: PA14, Rx: PA15, Flank: PA13, Flank timer:
+with:
+
+ - sercom:  the SERCOM interface number you'd like to use (e.g. 3)
+ - tx_port: the PORT of the TX output (e.g. A)
+ - tx_pin:  the PIN of the TX output (e.g. 14)
+ - rx_port: the PORT of the RX input (e.g. A)
+ - rx_pin:  the PIN of the RX input (e.g. 15)
+ - rx_pad:  the PAD to use for RX input on the SERCOM interface (e.g. 1, see datasheet)
+ - fl_port: the PORT of the FLANK detection (e.g. A)
+ - fl_pin:  the PIN of the FLANK detection (e.g. 13)
+ - fl_int:  the external interrupt associated to fl_pin (e.g. 1, see datasheet)
+ - fl_tmr:  the TIMER used for Carrier and Break detection
+
+For example, using SERCOM2, to write using pin 14, read on pin 15, and to use pin 13 for flank detection, together with timer 1, we write:
+
     LOCONET_BUILD(2/*sercom*/, A/*tx_port*/, 14/*tx_pin*/, A/*rx_port*/, 15/*rx_pin*/, 3/*rx_pad*/, A/*fl_port*/, 13/*fl_pin*/, 13/*fl_int*/, 1/*fl_tmr*/);
 
 
