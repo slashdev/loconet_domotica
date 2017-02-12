@@ -86,41 +86,41 @@ In the main function of the project, ensure that you initialize loconet via 'loc
       return 0;
     }
 
-# CV Values
+# Loconet Configuration Values (LNCV)
 
-Programming CV values using an Uhlenbrock Intellibox II is supported out of the box.
+Programming LNCVs using an Uhlenbrock Intellibox II is supported out of the box.
 
 ## Address and priority
 
-It is important to realize that the loconet address (loconet_config.bit.ADDRESS) and CV 0 are not automatically coupled. This coupling needs to be done in the `main()` and before `loconet_init()` is called. This ensures proper listening to messages.
+It is important to realize that the loconet address (loconet_config.bit.ADDRESS) and LNCV 0 are not automatically coupled. The same goes for the loconet priority (loconet_config.bit.PRIORITY). This coupling needs to be done in the `main()` and before `loconet_init()` is called. This ensures proper listening to messages and proper wait time for sending.
 
-## CV values
+## Known LNCVs
 
-| CV | Name                                 | Possible values |
-|----|--------------------------------------|-----------------|
-|  0 | Address of the module                | 1 - 65535       |
-|  1 | **Reserved**                         |                 |
-|  2 | Priority                             | 1 -    10       |
+| LNCV | Name                                 | Possible values |
+|------|--------------------------------------|-----------------|
+|    0 | Address of the module                | 1 - 65535       |
+|    1 | **Reserved**                         |                 |
+|    2 | Priority                             | 1 -    10       |
 
-## Read CV values
+## Read LNCV
 
-To read a CV value, call the function:
+To read a LNCV, call the function:
 
-    loconet_cv_get(CVnumber);
+    loconet_cv_get(LNCVnumber);
 
- Each time the function is called, it will get the actual value from the Eeprom. There is no caching. If values need to be obtained frequently, manually load them into the memory.
+ Each time the function is called, it will get the actual value from the Eeprom. There is no caching. If values need to be obtained frequently, manually cache them in the memory.
 
 ## Write a CV value
 
-To write a CV value, call the function:
+To write a LNCV, call the function:
 
-    loconet_cv_set(CVnumber, value);
+    loconet_cv_set(LNCVnumber, value);
 
 Internally, this function will first validate (via the function loconet_cv_write_allowed) whether writing is allowed. If so, the value is stored in the Eeprom.
 
-## Validating a CV value
+## Validating a LNCV before writing
 
-As CV numbers may have different restrictions on the values one can write to it, one can implement the 'loconet_cv_write_allowed' function that is called before a CV value is being written. Depending on the return code, the CV value will be written, or an error is sent to the programming station.
+As LNCVs may have different restrictions on the values one can write to them, you can implement the 'loconet_cv_write_allowed' function that is called before a LNCV is being written. Depending on the return code, the LNCV will be written, or an error is sent to the programming station.
 
     uint8_t loconet_cv_write_allowed(uint16_t lncv_number, uint16_t value);
     uint8_t loconet_cv_write_allowed(uint16_t lncv_number, uint16_t value) {
@@ -131,20 +131,17 @@ As CV numbers may have different restrictions on the values one can write to it,
 
 The return value should be either one of:
 
-    // Error-codes for write-request:
-    LOCONET_CV_ACK_ERROR_GENERIC
-    // Value out of range:
-    LOCONET_CV_ACK_ERROR_OUTOFRANGE
-    // CV is read only
-    LOCONET_CV_ACK_ERROR_READONLY
-    // Unsupported/non-existing CV
-    LOCONET_CV_ACK_ERROR_INVALID_VALUE 0x03
-    // Everything is ok:
-    LOCONET_CV_ACK_OK
+| Code                                 | Reason                                |
+|--------------------------------------|---------------------------------------|
+| `LOCONET_CV_ACK_ERROR_GENERIC`       | Generic error code                    |
+| `LOCONET_CV_ACK_ERROR_OUTOFRANGE`    | Value out of range                    |
+| `LOCONET_CV_ACK_ERROR_READONLY`      | LNCV is read only                     |
+| `LOCONET_CV_ACK_ERROR_INVALID_VALUE` | Unsupported/non-existing LNCV         |
+| `LOCONET_CV_ACK_OK`                  | Everything is ok, LNCV can be written |
 
-## Responding after a CV value changed
+## Responding after a LNCV changed
 
-After a CV value has been successfully written to the Eeprom, the system fires the loconet_cv_written_event, so that the program can update cached cv values. This should be implemented as follows:
+After a LNCV has been successfully written to the Eeprom, the system fires the loconet_cv_written_event, so that the program can update cached cv values. This should be implemented as follows:
 
     void loconet_cv_written_event(uint16_t lncv_number, uint16_t value);
     void loconet_cv_written_event(uint16_t lncv_number, uint16_t value) {
@@ -153,7 +150,7 @@ After a CV value has been successfully written to the Eeprom, the system fires t
 
 ## Responding after a programming session
 
-After a programming session to set some CV values, the system automatically calls the loconet_cv_prog_off_event, which can be overriden by the program via:
+After a programming session to set some LNCVs, the system automatically calls the loconet_cv_prog_off_event, which can be overriden by the program via:
 
     void loconet_cv_prog_off_event(void);
     void loconet_cv_prog_off_event(void){
@@ -171,13 +168,13 @@ Each message has its opcode. Each opcode has its own function that can be implem
 
 # Sending loconet messages
 
-Loconet messages can be sent using the 'loconet_tx_queue_X' functions (with X = 2, 4, 6 or n). Messages are added in a fair priority queue. The queue is fair in the sense that it a message eventually always will be sent.
+Loconet messages can be sent using the 'loconet_tx_queue_X' functions (with X = 2, 4, 6 or n). Messages are added in a fair priority queue. The queue is fair in the sense that a message always will be sent (eventually).
 
 For example, to send a sensor input message:
 
     loconet_tx_queue_4(0xB2, 5, byte1, byte2);
 
-As the address and state need to be encoded in byte1 and byte2, loconet_tx_messages.h has some helper functions. Calling:
+As the address and state need to be encoded in `byte1` and `byte2`, `loconet_tx_messages.h` has some helper functions. Calling:
 
     loconet_tx_input_rep(address, true);
 
