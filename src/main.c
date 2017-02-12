@@ -33,6 +33,7 @@
 #include <string.h>
 #include "samd20.h"
 #include "hal_gpio.h"
+#include "loconet/loconet.h"
 #include "loconet/loconet_cv.h"
 #include "utils/eeprom.h"
 
@@ -92,7 +93,12 @@ int main(void)
   // Initialize CVs for loconet
   loconet_cv_init();
 
-  while (1);
+  // Initialize loconet
+  loconet_init();
+
+  while (1) {
+    loconet_loop();
+  }
   return 0;
 }
 
