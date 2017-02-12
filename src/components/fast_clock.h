@@ -1,6 +1,6 @@
 /**
  * @file loconet.h
- * @brief Loconet base functionality
+ * @brief Loconet fast clock functionality
  *
  * \copyright Copyright 2017 /Dev. All rights reserved.
  * \license This project is released under MIT license.
@@ -26,7 +26,7 @@
  *
  * To use the clock system, one should initialize a clock using
  *
- *    LOCONET_BUILD(timer)
+ *    FAST_CLOCK_BUILD(timer)
  *
  * Where
  * - timer: the TIMER used for fast clock
@@ -51,8 +51,8 @@
 #include "utils/logger.h"
 
 typedef struct {
-  uint8_t minute;
   uint8_t second;
+  uint8_t minute;
   uint8_t hour;
   uint8_t day;
 } FAST_CLOCK_TIME_Type;
@@ -63,12 +63,12 @@ typedef struct {
 // identifying the master in clock messages.
 // The intermessage_delay is the delay in seconds between two
 // messages
-extern void fast_clock_set_as_master(uint8_t id1, uint8_t id2, uint16_t intermessage_delay);
+extern void fast_clock_set_master(uint8_t id1, uint8_t id2, uint16_t intermessage_delay);
 
 // ------------------------------------------------------------------
 // React on the clock messages as a slave, i.e. it does not send its
 // own time messages
-extern void fast_clock_set_as_slave(void);
+extern void fast_clock_set_slave(void);
 
 // ------------------------------------------------------------------
 // Sets the rate for the clock message. Only useful to use in case
@@ -78,18 +78,6 @@ extern void fast_clock_set_rate(uint8_t);
 // ------------------------------------------------------------------
 // Sets the time
 extern void fast_clock_set_time(FAST_CLOCK_TIME_Type time);
-
-// ------------------------------------------------------------------
-// Returns the minutes
-extern uint8_t fast_clock_get_minutes(void);
-
-// ------------------------------------------------------------------
-// Returns the hours
-extern uint8_t fast_clock_get_hours(void);
-
-// ------------------------------------------------------------------
-// Returns the day.
-extern uint8_t fast_clock_get_day(void);
 
 // ------------------------------------------------------------------
 // Returns the current time as FAST_CLOCK_TIME_Type

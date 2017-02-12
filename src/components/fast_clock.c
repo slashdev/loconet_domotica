@@ -1,29 +1,28 @@
 /*
  * @file fast_clock.c
- * @brief Loconet clock implementation
+ * @brief Loconet fast clock implementation
  *
  * \copyright Copyright 2017 /Dev. All rights reserved.
  * \license This project is released under MIT license.
  *
  * @author Jan Martijn van der Werf
- * @see fast_clock.h
  */
 
 #include "fast_clock.h"
 
 // ----------------------------------------------------------------------------
 // Prototypes
-void fast_clock_handle_update_(FAST_CLOCK_TIME_Type time);
+void fast_clock_handle_update_dummy(FAST_CLOCK_TIME_Type time);
 
 // ----------------------------------------------------------------------------
-// this is the function that any system that wants to react on the clock should
+// This is the function that any system that wants to react on the clock should
 // implement.
 //
-__attribute__ ((weak, alias("fast_clock_handle_update_")))
+__attribute__ ((weak, alias("fast_clock_handle_update_dummy")))
   void fast_clock_handle_update(FAST_CLOCK_TIME_Type time);
 
 // ----------------------------------------------------------------------------
-// set time initially to sunday 00:00:00.0000
+// Set time initially to sunday 00:00:00.0000
 FAST_CLOCK_TIME_Type current_time = {0, 0, 0, 0};
 
 // ----------------------------------------------------------------------------
@@ -41,8 +40,8 @@ FAST_CLOCK_STATUS_Type fast_clock_status = {0, 0, 0, 0, 1, 0};
 uint16_t fast_clock_current_intermessage_delay = 0;
 
 // ----------------------------------------------------------------------------
-// The clock is defined on div8. That means that the clock is triggered
-// every 50ms.
+// The clock is defined on div8, i.e. 1 us. By setting this delay to 50.000,
+// there is a tick every 50ms.
 #define FAST_CLOCK_TIMER_DELAY 50000
 Tc *fast_clock_timer;
 
@@ -81,8 +80,10 @@ void fast_clock_init_timer(Tc *timer, uint32_t pm_tmr_mask, uint32_t gclock_tmr_
 }
 
 // ----------------------------------------------------------------------------
-// sets the values for being a master: whether it is a
-void fast_clock_set_as_master(uint8_t id1, uint8_t id2, uint16_t intermessage_delay)
+// Sets the values for being a master. Variables id1 and id2 are used for
+// identification of the clock, the intermessage delay is the time that is
+// between two messages.
+void fast_clock_set_master(uint8_t id1, uint8_t id2, uint16_t intermessage_delay)
 {
   fast_clock_status.master = true;
   fast_clock_status.id1 = id1;
@@ -91,8 +92,8 @@ void fast_clock_set_as_master(uint8_t id1, uint8_t id2, uint16_t intermessage_de
 }
 
 // ----------------------------------------------------------------------------
-// sets the thing as a slave.
-void fast_clock_set_as_slave(void)
+// Sets the thing as a slave.
+void fast_clock_set_slave(void)
 {
   fast_clock_status.master = false;
 }
@@ -109,14 +110,14 @@ void fast_clock_set_time(FAST_CLOCK_TIME_Type time)
 }
 
 //----------------------------------------------------------------------------
-// this function sets the clock rate.
+// This function sets the clock rate.
 void fast_clock_set_rate(uint8_t rate)
 {
   fast_clock_status.rate = rate;
 }
 
 //----------------------------------------------------------------------------
-// this function processes the clock information sent on the loconet
+// This function processes the clock information sent on the loconet
 void loconet_rx_fast_clock(uint8_t *data, uint8_t length)
 {
   if (length < 8)
@@ -124,26 +125,30 @@ void loconet_rx_fast_clock(uint8_t *data, uint8_t length)
     return;
   }
 
-  if (!(data[7] == 1)) {
-    // the message is not a correct clock tick!
+  if (data[7] != 1) {
+    // The message is not a correct clock tick!
     return;
   }
 
-  //1st byte of data is the clock rate
+  // 1st byte of data is the clock rate
   fast_clock_set_rate(data[0]);
 
-  current_time.minute = data[3] - (128-60);
-  current_time.hour = data[5] >= (128-24) ? data[5] - (128-24) : data[5] % 24;
-  current_time.day = data[6] % 7;
+  // We first reset the second and millisecond counters, as we restart
+  // counting
+  fast_clock_status.millisecond = 0;
   current_time.second = 0;
 
-  fast_clock_status.millisecond = 0;
+  // Update current time according to the message
+  current_time.minute = data[3] - (128 - 60);
+  current_time.hour = data[5] >= (128 - 24) ? data[5] - (128-24) : data[5] % 24;
+  current_time.day = data[6] % 7;
 
+  // Notify the update
   fast_clock_handle_update(current_time);
 }
 
 //-----------------------------------------------------------------------------
-// sends the message in the appropriate format
+// Sends the message in the appropriate format
 static void fast_clock_send_message(void)
 {
   loconet_tx_fast_clock(
@@ -160,22 +165,27 @@ static void fast_clock_send_message(void)
 
 
 // ----------------------------------------------------------------------------
-// this function should be called every 50ms. It updates the clock with
+// This function should be called every 50ms. It updates the clock with
 // the set rate.
+// When the timer is used via `fast_clock_init`, this is done automatically.
 void fast_clock_tick(void)
 {
-  // keeps track whether we need an update. We only send an update
+  // Keeps track whether we need an update. We only send an update
   // if the minute counter has been increased.
   bool notify = false;
 
-  // update the milliseconds passed with the clock rate
-  fast_clock_status.millisecond += fast_clock_status.rate;
-
-  // as the millisecond counter counts every 50ms, we have 200 cycles for a
-  // second. Thus, if millisecond > 200, we can update the current_time
+  // Update the milliseconds passed with the clock rate As the millisecond
+  // counter counts every 50ms, we have 200 cycles for a second. We speed up by
+  // the fast rate, i.e., every ms now counts for rate ms. We could multiply
+  // the added millisecs with 50, and then check whether the millisec counter
+  // is bigger than 1000, but just dividing the whole lot by 50 gives simpler
+  // code :-)
+  // Thus, if millisecond >= 200, we can update the current_time
   // as the rate cannot be larger than 127, we do not need fancy checks :)
 
-  if (fast_clock_status.millisecond > 200) {
+  fast_clock_status.millisecond += fast_clock_status.rate;
+
+  if (fast_clock_status.millisecond >= 200) {
     fast_clock_status.millisecond -= 200;
     current_time.second++;
   }
@@ -192,6 +202,7 @@ void fast_clock_tick(void)
     current_time.minute = 0;
     current_time.hour++;
   }
+
   if (current_time.hour > 23)
   {
     current_time.hour = 0;
@@ -215,24 +226,6 @@ void fast_clock_tick(void)
   }
 }
 
-// ------------------------------------------------------------------
-uint8_t fast_clock_get_minutes(void)
-{
-  return current_time.minute;
-}
-
-// ------------------------------------------------------------------
-uint8_t fast_clock_get_hours(void)
-{
-  return current_time.hour;
-}
-
-// ------------------------------------------------------------------
-uint8_t fast_clock_get_day(void)
-{
-  return current_time.day;
-}
-
 FAST_CLOCK_TIME_Type fast_clock_get_time(void)
 {
   return current_time;
@@ -247,7 +240,7 @@ uint16_t fast_clock_get_time_as_int(void)
 // ----------------------------------------------------------------------------
 // Dummy implementation of the clock update. This one needs to be
 // implemented by the real program, to react on clock changes.
-void fast_clock_handle_update_(FAST_CLOCK_TIME_Type time)
+void fast_clock_handle_update_dummy(FAST_CLOCK_TIME_Type time)
 {
   (void) time;
 }
