@@ -25,6 +25,7 @@
 // /Dev device class: 12100 (/D)
 #define LOCONET_CV_DEVICE_CLASS     0x4BA // We listen to 1210
 #define LOCONET_CV_INITIAL_ADDRESS  0x03  // Initial address we listen to
+#define LOCONET_CV_INITIAL_PRIORITY 0x05  // Initial priority for sending
 
 #define LOCONET_CV_SRC_MASTER       0x00
 #define LOCONET_CV_SRC_KPU          0x01 // KPU is, e.g., an IntelliBox

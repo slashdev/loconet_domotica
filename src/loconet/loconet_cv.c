@@ -145,6 +145,8 @@ uint16_t loconet_cv_get(uint16_t lncv_number)
   // been configured by the user. Thus we use the initial address as address to listen to.
   if (lncv_number == 0 && page_data[1] != LOCONET_CV_DEVICE_CLASS) {
     return LOCONET_CV_INITIAL_ADDRESS;
+  } else if (lncv_number == 2 && page_data[1] != LOCONET_CV_DEVICE_CLASS) {
+    return LOCONET_CV_INITIAL_PRIORITY;
   } else {
     return page_data[lncv_number % LOCONET_CV_PER_PAGE];
   }

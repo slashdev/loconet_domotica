@@ -104,6 +104,7 @@ int main(void)
 
   // Set loconet basics
   loconet_config.bit.ADDRESS = loconet_cv_get(0);
+  loconet_config.bit.PRIORITY = loconet_cv_get(2);
 
   while (1) {
     loconet_loop();
