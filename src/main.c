@@ -96,6 +96,9 @@ int main(void)
   // Initialize loconet
   loconet_init();
 
+  // Set loconet basics
+  loconet_config.bit.ADDRESS = loconet_cv_get(0);
+
   while (1) {
     loconet_loop();
   }
