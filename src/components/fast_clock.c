@@ -33,15 +33,17 @@ typedef struct {
   uint8_t id2;
   uint16_t intermessage_delay;
   uint8_t rate;
+  uint8_t millisecond;
 } FAST_CLOCK_STATUS_Type;
 
-FAST_CLOCK_STATUS_Type fast_clock_status = {0, 0, 0, 0, 1};
+FAST_CLOCK_STATUS_Type fast_clock_status = {0, 0, 0, 0, 1, 0};
 
 uint16_t fast_clock_current_intermessage_delay = 0;
 
 // ----------------------------------------------------------------------------
-// The clock is defined on div1024. That means that 7812 ticks equals a second
-#define FAST_CLOCK_TIMER_DELAY 7812
+// The clock is defined on div8. That means that the clock is triggered
+// every 50ms.
+#define FAST_CLOCK_TIMER_DELAY 50000
 Tc *fast_clock_timer;
 
 // ----------------------------------------------------------------------------
@@ -60,13 +62,13 @@ void fast_clock_init_timer(Tc *timer, uint32_t pm_tmr_mask, uint32_t gclock_tmr_
   /* CTRLA register:
    *   PRESCSYNC: 0x02  RESYNC
    *   RUNSTDBY:        Ignored
-   *   PRESCALER: 0x07  DIV1024, each tick will be 1/7812 s
+   *   PRESCALER: 0x03  DIV8, each tick is be 1 us
    *   WAVEGEN:   0x01  MFRQ, zero counter on match
    *   MODE:      0x00  16 bits timer
    */
   fast_clock_timer->COUNT16.CTRLA.reg =
     TC_CTRLA_PRESCSYNC_RESYNC
-    | TC_CTRLA_PRESCALER_DIV1024
+    | TC_CTRLA_PRESCALER_DIV8
     | TC_CTRLA_WAVEGEN_MFRQ
     | TC_CTRLA_MODE_COUNT16;
 
@@ -98,8 +100,11 @@ void fast_clock_set_as_slave(void)
 //----------------------------------------------------------------------------
 void fast_clock_set_time(FAST_CLOCK_TIME_Type time)
 {
+  // Set the time
   current_time = time;
-
+  // Reset the millisecond counter
+  fast_clock_status.millisecond = 0;
+  // Notify the update!
   fast_clock_handle_update(current_time);
 }
 
@@ -132,6 +137,8 @@ void loconet_rx_fast_clock(uint8_t *data, uint8_t length)
   current_time.day = data[6] % 7;
   current_time.second = 0;
 
+  fast_clock_status.millisecond = 0;
+
   fast_clock_handle_update(current_time);
 }
 
@@ -153,27 +160,30 @@ static void fast_clock_send_message(void)
 
 
 // ----------------------------------------------------------------------------
-// this function should be called every second. It updates the clock with the
-// set rate.
+// this function should be called every 50ms. It updates the clock with
+// the set rate.
 void fast_clock_tick(void)
 {
   // keeps track whether we need an update. We only send an update
   // if the minute counter has been increased.
   bool notify = false;
 
-  // update the seconds passed with the clock rate
-  current_time.second += fast_clock_status.rate;
+  // update the milliseconds passed with the clock rate
+  fast_clock_status.millisecond += fast_clock_status.rate;
 
-  // as the rate can be higher than 60, we need to adjust
-  // the minutes according to the number of seconds added
-  // suppose the max rate is used, i.e., 127, then we have
-  // to add 2 minutes per tick. Hence, we need a while instead
-  // of an if.
+  // as the millisecond counter counts every 50ms, we have 200 cycles for a
+  // second. Thus, if millisecond > 200, we can update the current_time
+  // as the rate cannot be larger than 127, we do not need fancy checks :)
 
-  while (current_time.second > 60)
+  if (fast_clock_status.millisecond > 200) {
+    fast_clock_status.millisecond -= 200;
+    current_time.second++;
+  }
+
+  if(current_time.second > 59)
   {
     current_time.minute++;
-    current_time.second -= 60;
+    current_time.second = 0;
     notify = true;
   }
 
