@@ -33,11 +33,20 @@
 #include <string.h>
 #include "samd20.h"
 #include "hal_gpio.h"
+#include "loconet/loconet.h"
 #include "loconet/loconet_cv.h"
 #include "utils/eeprom.h"
 
 //-----------------------------------------------------------------------------
 HAL_GPIO_PIN(LED, A, 12);
+
+//-----------------------------------------------------------------------------
+void irq_handler_eic(void);
+void irq_handler_eic(void) {
+  if (loconet_handle_eic()) {
+    return;
+  }
+}
 
 //-----------------------------------------------------------------------------
 static void sys_init(void)
@@ -92,7 +101,16 @@ int main(void)
   // Initialize CVs for loconet
   loconet_cv_init();
 
-  while (1);
+  // Set loconet basics
+  loconet_config.bit.ADDRESS = loconet_cv_get(0);
+  loconet_config.bit.PRIORITY = loconet_cv_get(2);
+
+  // Initialize loconet
+  loconet_init();
+
+  while (1) {
+    loconet_loop();
+  }
   return 0;
 }
 

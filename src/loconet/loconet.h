@@ -136,7 +136,7 @@ extern void loconet_irq_timer(void);
 // IRQ for sercom
 extern void loconet_irq_sercom(void);
 
-extern void loconet_handle_eic(void);
+extern uint8_t loconet_handle_eic(void);
 
 //-----------------------------------------------------------------------------
 // Loconet loop to be used in the main loop
@@ -193,10 +193,10 @@ extern uint8_t loconet_calc_checksum(uint8_t *data, uint8_t length);
       tx_pin                                                                  \
     );                                                                        \
   }                                                                           \
-  void loconet_handle_eic(void) {                                             \
+  uint8_t loconet_handle_eic(void) {                                          \
     /* Return if it's not our external pin to watch */                        \
     if (!EIC->INTFLAG.bit.EXTINT##fl_int) {                                   \
-      return;                                                                 \
+      return 0;                                                               \
     }                                                                         \
     /* Reset flag */                                                          \
     EIC->INTFLAG.reg |= EIC_INTFLAG_EXTINT##fl_int;                           \
@@ -206,6 +206,7 @@ extern uint8_t loconet_calc_checksum(uint8_t *data, uint8_t length);
     } else {                                                                  \
       loconet_irq_flank_fall();                                               \
     }                                                                         \
+    return 1;                                                                 \
   }                                                                           \
   /* Handle timer interrupt */                                                \
   void irq_handler_tc##fl_tmr(void);                                          \
