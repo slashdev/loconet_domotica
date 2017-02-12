@@ -1,6 +1,157 @@
-# SAMD20 Starter
-Starter project for SAMD20 projects using a Makefile and OpenOCD.
+# Loconet starter project
+Starter project for Loconet projects, based on arm-samd20-starter.
 The target compiler is GCC.
+
+# Starting a project
+
+## Include loconet
+
+To start working with loconet, include its header file:
+
+    #include "loconet/loconet.h"
+
+To be able to respond on loconet messages, include the following header file:
+
+    #include "loconet/loconet_rx.h"
+
+To be able to send messages, include the following header file:
+
+    #include "loconet/loconet_tx.h"
+
+To simplify the sending of messages, a set of default send messages are provided in loconet/loconet_tx_messages.c. To use this module, add:
+
+    #include "loconet/loconet_tx_messages.h"
+
+## Initialize Loconet
+
+### 1. Pins and timers
+
+To send and receive messages, the loconet module needs to know which pins, ports and timers can be used. We pass this information via the macro LOCONET_BUILD.
+
+For example, to write using pin 14, read on pin 15, and to use pin 13 for flank detection, together with timer 1, we write:
+
+    // Loconet: Tx: PA14, Rx: PA15, Flank: PA13, Flank timer:
+    LOCONET_BUILD(2/*sercom*/, A/*tx_port*/, 14/*tx_pin*/, A/*rx_port*/, 15/*rx_pin*/, 3/*rx_pad*/, A/*fl_port*/, 13/*fl_pin*/, 13/*fl_int*/, 1/*fl_tmr*/);
+
+
+### 2. Add required functions
+
+For flank detection, we require an IRQ handler for EIC. As there is only one in the SAMD20, we do not want to claim it exclusively for loconet. Therefore, add the following function:
+
+    void irq_handler_eic(void) {
+      if (loconet_handle_eic()) {
+        return;
+      }
+    }
+
+
+### 3. Main function
+
+In the main function of the project, ensure that you initialize loconet via 'loconet_init()'. To be able to send and receive messages, use loconet_loop();
+
+
+    int main(void) {
+      ...
+      // Initialize loconet
+      loconet_init();
+
+      // Initialize CVs for loconet
+      loconet_cv_init();
+......
+......// Set the loconet address
+      loconet_config.bit.ADDRESS = loconet_cv_get(0);
+      // Set the priority of this device
+      loconet_config.bit.PRIORITY = 3;
+      ...
+      while(1)
+      {
+        loconet_loop();
+        ...
+      }
+
+      return 0;
+    }
+
+# CV Values
+
+Programming CV values using an Uhlenbrock Intellibox II is supported out of the box.
+
+## Address and priority
+
+It is important to realize that the loconet address (loconet_config.bit.ADDRESS) and CV 0 are not automatically coupled. One needs to ensure this coupling manually!
+
+## Read CV values
+
+To read a CV value, call the function:
+
+    loconet_cv_get(CVnumber);
+
+ Each time the function is called, it will get the actual value from the Eeprom. There is no caching. If values need to be obtained frequently, manually load them into the memory.
+
+## Write a CV value
+
+To write a CV value, call the function:
+
+    loconet_cv_set(CVnumber, value);
+
+Internally, this function will first validate (via the function loconet_cv_write_allowed) whether writing is allowed. If so, the value is stored in the Eeprom.
+
+## Validating a CV value
+
+As CV numbers may have different restrictions on the values one can write to it, one can implement the 'loconet_cv_write_allowed' function that is called before a CV value is being written. Depending on the return code, the CV value will be written, or an error is sent to the programming station.
+
+    uint8_t loconet_cv_write_allowed(uint16_t lncv_number, uint16_t value);
+    uint8_t loconet_cv_write_allowed(uint16_t lncv_number, uint16_t value) {
+      (void)lncv_number;
+      (void)value;
+      return LOCONET_CV_ACK_OK;
+    }
+
+The return value should be either one of:
+
+    // Error-codes for write-request:
+    LOCONET_CV_ACK_ERROR_GENERIC
+    // Value out of range:
+    LOCONET_CV_ACK_ERROR_OUTOFRANGE
+    // CV is read only
+    LOCONET_CV_ACK_ERROR_READONLY
+    // Unsupported/non-existing CV
+    LOCONET_CV_ACK_ERROR_INVALID_VALUE 0x03
+    // Everything is ok:
+    LOCONET_CV_ACK_OK
+
+## Responding after a programming session
+
+After a programming session to set some CV values, the system automatically calls the loconet_cv_prog_off_event, which can be overriden by the program via:
+
+    void loconet_cv_prog_off_event(void);
+    void loconet_cv_prog_off_event(void){
+      ...
+    }
+
+
+# Responding on received messages
+
+Each message has its opcode. Each opcode has its own function that can be implemented to respond on that message. For example, to respond on the B0 opcode (opc_sw_req), implement the function with 2 arguments (sw1, sw2) e.g.:
+
+    void loconet_rx_sw_req(uint8_t sw1, uint8_t sw2) {
+      ...
+    }
+
+# Sending loconet messages
+
+Loconet messages can be sent using the 'loconet_tx_queue_X' functions (with X = 2, 4, 6 or n). Messages are added in a fair priority queue. The queue is fair in the sense that it a message eventually always will be sent.
+
+For example, to send a sensor input message:
+
+    loconet_tx_queue_4(0xB2, 5, byte1, byte2);
+
+As the address and state need to be encoded in byte1 and byte2, loconet_tx_messages.h has some helper functions. Calling:
+
+    loconet_tx_input_rep(address, true);
+
+encodes the address and state in the two bytes, and sends the message.
+
 
 # Eeprom usage
 Example code to use the eeprom emulator with 4 rows. One row is used for master row, one is used as
