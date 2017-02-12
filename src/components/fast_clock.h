@@ -50,6 +50,14 @@
 #include "loconet/loconet_tx_messages.h"
 #include "utils/logger.h"
 
+typedef struct {
+  uint8_t minute;
+  uint8_t second;
+  uint8_t hour;
+  uint8_t day;
+} FAST_CLOCK_TIME_Type;
+
+
 // ------------------------------------------------------------------
 extern void fast_clock_set_as_master(uint8_t id1, uint8_t id2, uint16_t intermessage_delay);
 
@@ -64,6 +72,10 @@ extern void fast_clock_set_as_slave(void);
 extern void fast_clock_set_rate(uint8_t);
 
 // ------------------------------------------------------------------
+// Sets the time
+extern void fast_clock_set_time(FAST_CLOCK_TIME_Type time);
+
+// ------------------------------------------------------------------
 // Returns the minutes
 extern uint8_t fast_clock_get_minutes(void);
 
@@ -76,8 +88,11 @@ extern uint8_t fast_clock_get_hours(void);
 extern uint8_t fast_clock_get_day(void);
 
 // ------------------------------------------------------------------
+extern FAST_CLOCK_TIME_Type fast_clock_get_time(void);
+
+// ------------------------------------------------------------------
 // Returns the time as hour * 100 + minutes
-extern uint16_t fast_clock_get_time(void);
+extern uint16_t fast_clock_get_time_as_int(void);
 
 // ------------------------------------------------------------------
 // Called every second

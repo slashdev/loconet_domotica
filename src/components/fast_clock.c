@@ -13,14 +13,18 @@
 
 // ----------------------------------------------------------------------------
 // Prototypes
-void fast_clock_handle_update_(uint8_t day, uint8_t hour, uint8_t minute);
+void fast_clock_handle_update_(FAST_CLOCK_TIME_Type time);
 
 // ----------------------------------------------------------------------------
 // this is the function that any system that wants to react on the clock should
 // implement.
 //
 __attribute__ ((weak, alias("fast_clock_handle_update_")))
-  void fast_clock_handle_update(uint8_t day, uint8_t hour, uint8_t minute);
+  void fast_clock_handle_update(FAST_CLOCK_TIME_Type time);
+
+// ----------------------------------------------------------------------------
+// set time initially to sunday 00:00:00.0000
+FAST_CLOCK_TIME_Type current_time = {0, 0, 0, 0};
 
 // ----------------------------------------------------------------------------
 typedef struct {
@@ -29,50 +33,46 @@ typedef struct {
   uint8_t id2;
   uint16_t intermessage_delay;
   uint8_t rate;
-  uint8_t minute;
-  uint8_t second;
-  uint8_t hour;
-  uint8_t day;
 } fast_clock_STATUS_Type;
 
-fast_clock_STATUS_Type fast_clock_status = {0, 0, 0, 0, 1, 0, 0, 0, 0};
+fast_clock_STATUS_Type fast_clock_status = {0, 0, 0, 0, 1};
 
 uint16_t fast_clock_current_intermessage_delay = 0;
 
-// ----------------------------------------------------------------------------
-// ONLY FOR DEBUGGING
-static void print_time(uint8_t day, uint8_t hour, uint8_t minute)
-{
-  switch(day)
-  {
-    default:
-    case 0:
-      logger_string("Sunday ");
-      break;
-    case 1:
-      logger_string("Monday ");
-      break;
-    case 2:
-      logger_string("Tuesday ");
-      break;
-    case 3:
-      logger_string("Wednesday ");
-      break;
-    case 4:
-      logger_string("Thursday ");
-      break;
-    case 5:
-      logger_string("Friday ");
-      break;
-    case 6:
-      logger_string("Saturday ");
-      break;
-  }
-  logger_number(hour);
-  logger_char(':');
-  logger_number(minute);
-  logger_newline();
-}
+// // ----------------------------------------------------------------------------
+// // ONLY FOR DEBUGGING
+// static void print_time(uint8_t day, uint8_t hour, uint8_t minute)
+// {
+//   switch(day)
+//   {
+//     default:
+//     case 0:
+//       logger_string("Sunday ");
+//       break;
+//     case 1:
+//       logger_string("Monday ");
+//       break;
+//     case 2:
+//       logger_string("Tuesday ");
+//       break;
+//     case 3:
+//       logger_string("Wednesday ");
+//       break;
+//     case 4:
+//       logger_string("Thursday ");
+//       break;
+//     case 5:
+//       logger_string("Friday ");
+//       break;
+//     case 6:
+//       logger_string("Saturday ");
+//       break;
+//   }
+//   logger_number(hour);
+//   logger_char(':');
+//   logger_number(minute);
+//   logger_newline();
+// }
 
 
 // ----------------------------------------------------------------------------
@@ -132,18 +132,12 @@ void fast_clock_set_as_slave(void)
 }
 
 //----------------------------------------------------------------------------
-static void fast_clock_set(uint8_t day, uint8_t hour, uint8_t minute)
+void fast_clock_set_time(FAST_CLOCK_TIME_Type time)
 {
-  fast_clock_status.day = day % 7;
-  fast_clock_status.hour = hour % 24;
-  fast_clock_status.minute = minute % 60;
+  current_time = time;
 
-  fast_clock_status.second = 0;
-
-  logger_string("RECEIVED: ");
-  fast_clock_handle_update(fast_clock_status.day, fast_clock_status.hour, fast_clock_status.minute);
+  fast_clock_handle_update(current_time);
 }
-
 
 //----------------------------------------------------------------------------
 // this function sets the clock rate.
@@ -169,11 +163,12 @@ void loconet_rx_fast_clock(uint8_t *data, uint8_t length)
   //1st byte of data is the clock rate
   fast_clock_set_rate(data[0]);
 
-  uint8_t minute = data[3] - (128-60);
-  uint8_t hour = data[5] >= (128-24) ? data[5] - (128-24) : data[5] % 24;
-  uint8_t day = data[6] % 7;
+  current_time.minute = data[3] - (128-60);
+  current_time.hour = data[5] >= (128-24) ? data[5] - (128-24) : data[5] % 24;
+  current_time.day = data[6] % 7;
+  current_time.second = 0;
 
-  fast_clock_set(day, hour, minute);
+  fast_clock_handle_update(current_time);
 }
 
 //-----------------------------------------------------------------------------
@@ -184,9 +179,9 @@ static void fast_clock_send_message(void)
     fast_clock_status.rate,
     0x0,
     0x0,
-    fast_clock_status.minute,
-    fast_clock_status.hour,
-    fast_clock_status.day,
+    current_time.minute,
+    current_time.hour,
+    current_time.day,
     fast_clock_status.id1,
     fast_clock_status.id2
   );
@@ -203,7 +198,7 @@ void fast_clock_tick(void)
   bool notify = false;
 
   // update the seconds passed with the clock rate
-  fast_clock_status.second += fast_clock_status.rate;
+  current_time.second += fast_clock_status.rate;
 
   // as the rate can be higher than 60, we need to adjust
   // the minutes according to the number of seconds added
@@ -211,29 +206,29 @@ void fast_clock_tick(void)
   // to add 2 minutes per tick. Hence, we need a while instead
   // of an if.
 
-  while (fast_clock_status.second > 60)
+  while (current_time.second > 60)
   {
-    fast_clock_status.minute++;
-    fast_clock_status.second -= 60;
+    current_time.minute++;
+    current_time.second -= 60;
     notify = true;
   }
 
-  if (fast_clock_status.minute > 59)
+  if (current_time.minute > 59)
   {
-    fast_clock_status.minute = 0;
-    fast_clock_status.hour++;
+    current_time.minute = 0;
+    current_time.hour++;
   }
-  if (fast_clock_status.hour > 23)
+  if (current_time.hour > 23)
   {
-    fast_clock_status.hour = 0;
+    current_time.hour = 0;
 
-    fast_clock_status.day++;
-    fast_clock_status.day %= 7;
+    current_time.day++;
+    current_time.day %= 7;
   }
 
   if (notify)
   {
-    fast_clock_handle_update(fast_clock_status.day, fast_clock_status.hour, fast_clock_status.minute);
+    fast_clock_handle_update(current_time);
   }
 
   // Do we need to send a message as master?
@@ -249,25 +244,30 @@ void fast_clock_tick(void)
 // ------------------------------------------------------------------
 uint8_t fast_clock_get_minutes(void)
 {
-  return fast_clock_status.minute;
+  return current_time.minute;
 }
 
 // ------------------------------------------------------------------
 uint8_t fast_clock_get_hours(void)
 {
-  return fast_clock_status.hour;
+  return current_time.hour;
 }
 
 // ------------------------------------------------------------------
 uint8_t fast_clock_get_day(void)
 {
-  return fast_clock_status.day;
+  return current_time.day;
+}
+
+FAST_CLOCK_TIME_Type fast_clock_get_time(void)
+{
+  return current_time;
 }
 
 // ------------------------------------------------------------------
-uint16_t fast_clock_get_time(void)
+uint16_t fast_clock_get_time_as_int(void)
 {
-  return fast_clock_status.hour * 100 + fast_clock_status.minute;
+  return current_time.hour * 100 + current_time.minute;
 }
 
 
@@ -275,12 +275,8 @@ uint16_t fast_clock_get_time(void)
 // ----------------------------------------------------------------------------
 // Dummy implementation of the clock update. This one needs to be
 // implemented by the real program, to react on clock changes.
-void fast_clock_handle_update_(uint8_t day, uint8_t hour, uint8_t minute)
+void fast_clock_handle_update_(FAST_CLOCK_TIME_Type time)
 {
-  (void) day;
-  (void) hour;
-  (void) minute;
-
-  print_time(day, hour, minute);
+  (void) time;
 }
 
