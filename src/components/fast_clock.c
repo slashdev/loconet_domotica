@@ -39,42 +39,6 @@ FAST_CLOCK_STATUS_Type fast_clock_status = {0, 0, 0, 0, 1};
 
 uint16_t fast_clock_current_intermessage_delay = 0;
 
-// // ----------------------------------------------------------------------------
-// // ONLY FOR DEBUGGING
-// static void print_time(uint8_t day, uint8_t hour, uint8_t minute)
-// {
-//   switch(day)
-//   {
-//     default:
-//     case 0:
-//       logger_string("Sunday ");
-//       break;
-//     case 1:
-//       logger_string("Monday ");
-//       break;
-//     case 2:
-//       logger_string("Tuesday ");
-//       break;
-//     case 3:
-//       logger_string("Wednesday ");
-//       break;
-//     case 4:
-//       logger_string("Thursday ");
-//       break;
-//     case 5:
-//       logger_string("Friday ");
-//       break;
-//     case 6:
-//       logger_string("Saturday ");
-//       break;
-//   }
-//   logger_number(hour);
-//   logger_char(':');
-//   logger_number(minute);
-//   logger_newline();
-// }
-
-
 // ----------------------------------------------------------------------------
 // The clock is defined on div1024. That means that 7812 ticks equals a second
 #define FAST_CLOCK_TIMER_DELAY 7812
@@ -270,8 +234,6 @@ uint16_t fast_clock_get_time_as_int(void)
   return current_time.hour * 100 + current_time.minute;
 }
 
-
-
 // ----------------------------------------------------------------------------
 // Dummy implementation of the clock update. This one needs to be
 // implemented by the real program, to react on clock changes.
@@ -279,4 +241,3 @@ void fast_clock_handle_update_(FAST_CLOCK_TIME_Type time)
 {
   (void) time;
 }
-
