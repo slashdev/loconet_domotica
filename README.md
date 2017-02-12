@@ -62,8 +62,7 @@ For flank detection, we require an IRQ handler for EIC. As there is only one in 
 
 ### 3. Main function
 
-In the main function of the project, ensure that you initialize loconet via 'loconet_init()'. To be able to send and receive messages, use loconet_loop();
-
+In the main function of the project, ensure that you initialize loconet via `loconet_init()`. To be able to send and receive messages, use `loconet_loop()`;
 
     int main(void) {
       ...
@@ -92,7 +91,7 @@ Programming LNCVs using an Uhlenbrock Intellibox II is supported out of the box.
 
 ## Address and priority
 
-It is important to realize that the loconet address (loconet_config.bit.ADDRESS) and LNCV 0 are not automatically coupled. The same goes for the loconet priority (loconet_config.bit.PRIORITY). This coupling needs to be done in the `main()` and before `loconet_init()` is called. This ensures proper listening to messages and proper wait time for sending.
+It is important to realize that the loconet address (`loconet_config.bit.ADDRESS`) and LNCV 0 are not automatically coupled. The same goes for the loconet priority (`loconet_config.bit.PRIORITY`) which can be found in LNCV 2. This coupling needs to be done in the `main()` and before `loconet_init()` is called. This ensures proper listening to messages and proper wait time for sending.
 
 ## Known LNCVs
 
