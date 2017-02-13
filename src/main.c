@@ -33,9 +33,20 @@
 #include <string.h>
 #include "samd20.h"
 #include "hal_gpio.h"
+#include "loconet/loconet.h"
+#include "loconet/loconet_cv.h"
+#include "utils/eeprom.h"
 
 //-----------------------------------------------------------------------------
 HAL_GPIO_PIN(LED, A, 12);
+
+//-----------------------------------------------------------------------------
+void irq_handler_eic(void);
+void irq_handler_eic(void) {
+  if (loconet_handle_eic()) {
+    return;
+  }
+}
 
 //-----------------------------------------------------------------------------
 static void sys_init(void)
@@ -48,15 +59,58 @@ static void sys_init(void)
 }
 
 //-----------------------------------------------------------------------------
+static void hard_reset(void)
+{
+  __DSB();
+  asm volatile ("cpsid i");
+  WDT->CONFIG.reg = 0;
+  WDT->CTRL.reg |= WDT_CTRL_ENABLE;
+  while(1);
+}
+
+//-----------------------------------------------------------------------------
+static void eeprom_init(void)
+{
+  enum status_code error_code = eeprom_emulator_init();
+
+  // Fusebits for memory are not set, or too low.
+  // We need at least 3 pages, so set to 1024
+  if (error_code == STATUS_ERR_NO_MEMORY) {
+    struct nvm_fusebits fusebits;
+    nvm_get_fuses(&fusebits);
+    fusebits.eeprom_size = NVM_EEPROM_EMULATOR_SIZE_1024;
+    nvm_set_fuses(&fusebits);
+    hard_reset();
+  } else if (error_code != STATUS_OK) {
+    // Erase eeprom, assume unformated or corrupt
+    eeprom_emulator_erase_memory();
+    hard_reset();
+  }
+}
+
+//-----------------------------------------------------------------------------
 int main(void)
 {
   sys_init();
+  eeprom_init();
   // Set LED GPIO as output
   HAL_GPIO_LED_out();
   // Turn on the LED
   HAL_GPIO_LED_set();
 
-  while (1);
+  // Initialize CVs for loconet
+  loconet_cv_init();
+
+  // Set loconet basics
+  loconet_config.bit.ADDRESS = loconet_cv_get(0);
+  loconet_config.bit.PRIORITY = loconet_cv_get(2);
+
+  // Initialize loconet
+  loconet_init();
+
+  while (1) {
+    loconet_loop();
+  }
   return 0;
 }
 
