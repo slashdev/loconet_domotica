@@ -37,8 +37,15 @@
 #include "loconet/loconet_cv.h"
 #include "utils/eeprom.h"
 
+#include "domotica/domotica.h"
+#include "domotica/domotica_rx.h"
+
 //-----------------------------------------------------------------------------
 HAL_GPIO_PIN(LED, A, 12);
+
+// TODO: Change according to actual values. For now I use them in the same
+// setting as Ferdi has them.
+LOCONET_BUILD(2/*sercom*/, A/*tx_port*/, 14/*tx_pin*/, A/*rx_port*/, 15/*rx_pin*/, 3/*rx_pad*/, A/*fl_port*/, 13/*fl_pin*/, 13/*fl_int*/, 1/*fl_tmr*/);
 
 //-----------------------------------------------------------------------------
 void irq_handler_eic(void);
@@ -89,6 +96,16 @@ static void eeprom_init(void)
 }
 
 //-----------------------------------------------------------------------------
+// This function implements the actual output change, determined by the
+// domotica controllers.
+void domotica_handle_output_change(uint16_t mask_on, uint16_t mask_off);
+void domotica_handle_output_change(uint16_t mask_on, uint16_t mask_off)
+{
+  (void) mask_on;
+  (void) mask_off;
+}
+
+//-----------------------------------------------------------------------------
 int main(void)
 {
   sys_init();
@@ -110,6 +127,8 @@ int main(void)
 
   while (1) {
     loconet_loop();
+
+    domotica_loop();
   }
   return 0;
 }
