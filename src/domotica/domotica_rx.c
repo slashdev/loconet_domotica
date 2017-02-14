@@ -11,48 +11,30 @@
 #include "domotica_rx.h"
 
 // ------------------------------------------------------------------
-typedef struct INPUT_ADDRESS {
+typedef struct {
   uint8_t lncv;
   uint16_t address;
-  struct INPUT_ADDRESS *next;
 } INPUT_ADDRESS_Type;
 
-static INPUT_ADDRESS_Type *input_addresses = 0;
+static INPUT_ADDRESS_Type b2_addresses[DOMOTICA_RX_INPUT_ADDRESS_SIZE];
+
+void domotica_rx_init(void)
+{
+  b2_addresses[0].address = 0;
+}
 
 // ------------------------------------------------------------------
 // Adds a sensor device to the list of elements to listen to.
 // lncv is used to be able to refer to the corresponding masks
 void domotica_rx_set_input_address(uint8_t lncv, uint16_t address)
 {
+  uint8_t index = 0;
+  for(; index < DOMOTICA_RX_INPUT_ADDRESS_SIZE && b2_addresses[index].address > 0 ; index++ );
 
-  if (!input_addresses)
+  if (index < DOMOTICA_RX_INPUT_ADDRESS_SIZE)
   {
-    input_addresses = malloc(sizeof(INPUT_ADDRESS_Type));
-    input_addresses->lncv = lncv;
-    input_addresses->address = address;
-
-    return;
-  }
-
-  INPUT_ADDRESS_Type *curr = input_addresses->next;
-  INPUT_ADDRESS_Type *prev = input_addresses;
-
-  // Move to the first lncv that is larger than, or equal to the given lncv
-  // number
-  for(; curr && curr->address < address; prev = curr, curr = curr->next);
-
-  if (curr && curr->address == address) {
-    // If curr exists and the address in it equals the address we want
-    // to store, then store it!
-    curr->lncv = lncv;
-  } else {
-    // It is larger, thus we need to squeeze inp in!
-    INPUT_ADDRESS_Type *inp = malloc(sizeof(INPUT_ADDRESS_Type));
-    inp->lncv = lncv;
-    inp->address = address;
-    inp->next = curr;
-
-    prev->next = inp;
+    b2_addresses[index].address = address;
+    b2_addresses[index].lncv = lncv;
   }
 }
 
@@ -60,24 +42,12 @@ void domotica_rx_set_input_address(uint8_t lncv, uint16_t address)
 // Removes the input address that belongs to the given lncv number
 void domotica_rx_remove_input_address(uint8_t lncv)
 {
-  if (!input_addresses)
+  uint8_t index = 0;
+  for(; index < DOMOTICA_RX_INPUT_ADDRESS_SIZE && b2_addresses[index].lncv != lncv ; index++);
+  if (index < DOMOTICA_RX_INPUT_ADDRESS_SIZE)
   {
-    return;
-  }
-  INPUT_ADDRESS_Type *curr = input_addresses->next;
-  INPUT_ADDRESS_Type *prev = input_addresses;
-
-  // Move to the first lncv that is larger than, or equal to the given lncv
-  // number
-  for(; curr && curr->lncv < lncv; prev = curr, curr = curr->next);
-
-  if (curr && curr->lncv == lncv)
-  {
-    // Set the next of prev to the next of curr, so curr is no longer
-    // in the list
-    prev->next = curr->next;
-    // Then remove it!
-    free(curr);
+    b2_addresses[index].address = 0;
+    b2_addresses[index].lncv = 0;
   }
 }
 
@@ -105,14 +75,12 @@ static bool extract_state(uint8_t byte)
 
 static uint8_t in_b2_address_list(uint16_t address)
 {
-  INPUT_ADDRESS_Type *curr = input_addresses;
-  for(; curr && curr->address != address; curr = curr->next);
-
-  // If curr is set, then it is the address, since otherwise we would have
-  // traversed the whole list, and would arrive at the last address;
-  if (curr)
+  for(uint8_t index = 0 ; index < DOMOTICA_RX_INPUT_ADDRESS_SIZE ; index++)
   {
-    return curr->lncv;
+    if (b2_addresses[index].address == address)
+    {
+      return b2_addresses[index].lncv;
+    }
   }
 
   return 0;
