@@ -10,6 +10,7 @@
 
 // ------------------------------------------------------------------
 
+<<<<<<< 8dd704b99c3fe2e3eee2f75c04dd7a517765a886
 #ifndef DOMOTICA_RX_INPUT_ADDRESS_SIZE
   #define DOMOTICA_RX_INPUT_ADDRESS_SIZE 6
 #endif
@@ -27,6 +28,20 @@
 // ------------------------------------------------------------------
 // Initialize the RX library
 extern void domotica_rx_init(void);
+=======
+#ifndef _DOMOTICA_RX_H_
+#define _DOMOTICA_RX_H_
+
+#define DOMOTICA_RX_INPUT_ADDRESS_SIZE 6
+
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include "domotica.h"
+#include "loconet/loconet_cv.h"
+#include "loconet/loconet_rx.h"
+
+>>>>>>> Initial version that listens to b2 messages (opc_input_rep)
 
 // ------------------------------------------------------------------
 // Add a B2 address to listen to.
@@ -40,6 +55,7 @@ void domotica_rx_remove_input_address(uint8_t lncv);
 // Listen to sensor messages sent by other devices
 extern void loconet_rx_input_rep(uint8_t, uint8_t);
 
+<<<<<<< 8dd704b99c3fe2e3eee2f75c04dd7a517765a886
 // ------------------------------------------------------------------
 // Listen to switch requests. We switch if the address matches
 // loconet_config.bit.ADDRESS + index, with 0 <= index < 16. Depending on the
@@ -47,4 +63,6 @@ extern void loconet_rx_input_rep(uint8_t, uint8_t);
 // on or off
 extern void loconet_rx_sw_req(uint8_t sw1, uint8_t sw2);
 
+=======
+>>>>>>> Initial version that listens to b2 messages (opc_input_rep)
 #endif // _DOMOTICA_RX_H_
