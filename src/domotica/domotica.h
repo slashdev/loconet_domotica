@@ -21,7 +21,11 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include "domotica_rx.h"
 
+// ------------------------------------------------------------------
+// Initialize domotica
+extern void domotica_init(void);
 
 // ------------------------------------------------------------------
 // Enqueue an output change so that it eventually will be processed

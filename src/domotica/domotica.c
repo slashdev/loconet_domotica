@@ -67,6 +67,12 @@ void domotica_loop(void)
 }
 
 // ------------------------------------------------------------------
+void domotica_init(void)
+{
+  domotica_rx_init();
+}
+
+// ------------------------------------------------------------------
 void domotica_handle_output_change_dummy(uint16_t mask_on, uint16_t mask_off)
 {
   (void) mask_on;
