@@ -60,7 +60,7 @@ static uint16_t extract_b2_address(uint8_t byte1, uint8_t byte2)
 
   // Multiply by two
   address <<= 1;
-  // We always need to add 1 to the address, and 2 if its even
+  // We always need to add 1 to the address, and 2 if its odd
   // If bit 5 is a 1, then the number is even
   address += (byte2 & 0x20) ? 2 : 1;
 
