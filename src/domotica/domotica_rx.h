@@ -30,7 +30,6 @@ extern void domotica_rx_init(void);
 #ifndef _DOMOTICA_RX_H_
 #define _DOMOTICA_RX_H_
 
-#define DOMOTICA_RX_INPUT_ADDRESS_SIZE 6
 
 #include <stdbool.h>
 #include <stdint.h>
