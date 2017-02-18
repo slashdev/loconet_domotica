@@ -38,3 +38,11 @@ void loconet_cv_written_event(uint16_t lncv_number, uint16_t value)
     // Update the Fast clock points
   }
 }
+
+// ----------------------------------------------------------------------------
+uint8_t loconet_cv_write_allowed(uint16_t lncv_number, uint16_t value)
+{
+  (void)lncv_number;
+  (void)value;
+  return LOCONET_CV_ACK_OK;
+}
