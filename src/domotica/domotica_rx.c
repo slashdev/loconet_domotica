@@ -52,7 +52,7 @@ void domotica_rx_remove_input_address(uint8_t lncv)
 }
 
 // ------------------------------------------------------------------
-static uint16_t extract_b2_address(uint8_t byte1, uint8_t byte2)
+static uint16_t extract_address(uint8_t byte1, uint8_t byte2, bool is4kaddress)
 {
   // The address is encoded in both bytes: the first seven are in in1
   // The latter 4 are in the first 4 bits of the second byte
@@ -60,9 +60,18 @@ static uint16_t extract_b2_address(uint8_t byte1, uint8_t byte2)
 
   // Multiply by two
   address <<= 1;
-  // We always need to add 1 to the address, and 2 if its odd
-  // If bit 5 is a 1, then the number is even
-  address += (byte2 & 0x20) ? 2 : 1;
+
+  if (is4kaddress)
+  {
+    // We always need to add 1 to the address, and 2 if its odd
+    // If bit 5 is a 1, then the number is even
+    address += (byte2 & 0x20) ? 2 : 1;
+  }
+  else
+  {
+    // we just need to add one to the address...
+    address += 1;
+  }
 
   return address;
 }
@@ -89,7 +98,7 @@ static uint8_t in_b2_address_list(uint16_t address)
 // ------------------------------------------------------------------
 void loconet_rx_input_rep(uint8_t in1, uint8_t in2)
 {
-  uint16_t address = extract_b2_address(in1, in2);
+  uint16_t address = extract_address(in1, in2, true);
   bool state = extract_state(in2);
 
   // Check if address is in our array. If so, we need to update the
