@@ -25,15 +25,16 @@ void loconet_cv_written_event(uint16_t lncv_number, uint16_t value)
   {
     // Fast clock setting
   }
-  else if (lncv_number >= 14 && lncv_number < 30)
+  else if (lncv_number >= DOMOTICA_LNCV_START_OUTPUT_BRIGHTNESS && lncv_number < DOMOTICA_LNCV_END_OUTPUT_BRIGHTNESS)
   {
     // Output light settings
   }
-  else if (lncv_number >= 30 && lncv_number < 56 && lncv_number % 5 == 0 )
+  // TODO: Refactor the % 5 = 0 to % 5 = DOMOTICA_INPUT_ADDRESS_Mask
+  else if (lncv_number >= DOMOTICA_LNCV_START_INPUT_ADDRESSES && lncv_number < DOMOTICA_LNCV_END_INPUT_ADDRESSES)
   {
     // Update the address in the B2 address array
   }
-  else if (lncv_number >= 60 && lncv_number < 240)
+  else if (lncv_number >= DOMOTICA_LNCV_START_FAST_CLOCK && lncv_number < DOMOTICA_LNCV_END_FAST_CLOCK)
   {
     // Update the Fast clock points
   }
