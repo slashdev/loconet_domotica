@@ -35,6 +35,10 @@
 // Initialize domotica
 extern void domotica_init(void);
 
+#ifndef DOMOTICA_OUTPUT_SIZE
+  #define DOMOTICA_OUTPUT_SIZE 16
+#endif
+
 // ------------------------------------------------------------------
 // Enqueue an output change so that it eventually will be processed
 extern void domotica_enqueue_output_change(uint16_t mask_on, uint16_t mask_off);
