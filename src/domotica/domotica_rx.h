@@ -45,6 +45,6 @@ extern void loconet_rx_input_rep(uint8_t, uint8_t);
 // loconet_config.bit.ADDRESS + index, with 0 <= index < 16. Depending on the
 // ON bit of the B0 message, we decide whether the output should be switched
 // on or off
-extern void loconet_rx_sw_req(uint8_t, uint8_t);
+extern void loconet_rx_sw_req(uint8_t sw1, uint8_t sw2);
 
 #endif // _DOMOTICA_RX_H_
