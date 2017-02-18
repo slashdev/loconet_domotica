@@ -119,3 +119,29 @@ void loconet_rx_input_rep(uint8_t in1, uint8_t in2)
   }
 
 }
+
+// ------------------------------------------------------------------
+void loconet_rx_sw_req(uint8_t sw1, uint8_t sw2)
+{
+  uint16_t address = extract_address(sw1, sw2, false);
+
+  // We listen to the ON bit in the message.
+  bool state = extract_state(sw2);
+
+  // Check if we have the right address!
+  for(uint8_t index = 0 ; index < 16 ; index++) {
+    if (address == loconet_config.bit.ADDRESS + index)
+    {
+      if (state == true)
+      {
+        // Switch output "index" on!
+        domotica_enqueue_output_change((1 << index), 0);
+      }
+      else
+      {
+        // Switch output "index" off
+        domotica_enqueue_output_change(0, (1 << index));
+      }
+    }
+  }
+}
