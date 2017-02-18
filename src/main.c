@@ -38,9 +38,6 @@
 #include "utils/eeprom.h"
 
 #include "components/fast_clock.h"
-#include "domotica/domotica.h"
-#include "domotica/domotica_cv.h"
-// #include "domotica/domotica_rx.h"
 
 // We need 240 CV values
 // #define LOCONET_CV_NUMBERS 240
@@ -50,11 +47,11 @@
 
 // Start number for the Output
 #define DOMOTICA_LNCV_START_OUTPUT_BRIGHTNESS 14
-#define DOMOTICA_LNCV_END_OUTPUT_BRIGHTNESS (14+DOMOTICA_OUTPUT_SIZE)
-#define DOMOTICA_LNCV_START_INPUT_ADDRESSES 30
-#define DOMOTICA_LNCV_END_INPUT_ADDRESSES (DOMOTICA_START_INPUT_ADDRESSES + 5 * DOMOTICA_RX_INPUT_ADDRESS_SIZE)
-#define DOMOTICA_LNCV_START_FAST_CLOCK DOMOTICA_END_INPUT_ADDRESSES
-#define DOMOTICA_LNCV_END_FAST_CLOCK (DOMOTICA_START_FAST_CLOCK + 3 * DOMOTICA_FAST_CLOCK_SIZE)
+
+
+#include "domotica/domotica.h"
+#include "domotica/domotica_cv.h"
+// #include "domotica/domotica_rx.h"
 
 //-----------------------------------------------------------------------------
 HAL_GPIO_PIN(LED, A, 12);
