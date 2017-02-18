@@ -17,8 +17,6 @@
 #ifndef _DOMOTICA_RX_H_
 #define _DOMOTICA_RX_H_
 
-
-
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -44,8 +42,10 @@ void domotica_rx_remove_input_address(uint8_t lncv);
 extern void loconet_rx_input_rep(uint8_t, uint8_t);
 
 // ------------------------------------------------------------------
-// Listen to switch requests
+// Listen to switch requests. We switch if the address matches
+// loconet_config.bit.ADDRESS + index, with 0 <= index < 16. Depending on the
+// ON bit of the B0 message, we decide whether the output should be switched
+// on or off
 extern void loconet_rx_sw_req(uint8_t, uint8_t);
-
 
 #endif // _DOMOTICA_RX_H_
