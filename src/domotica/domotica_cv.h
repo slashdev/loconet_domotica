@@ -11,6 +11,15 @@
 #include <stdint.h>
 #include "loconet/loconet.h"
 
+#include "domotica.h"
+
+#ifndef DOMOTICA_RX_INPUT_ADDRESS_SIZE
+  #define DOMOTICA_RX_INPUT_ADDRESS_SIZE 6
+#endif
+#ifndef DOMOTICA_FAST_CLOCK_SIZE
+  #define DOMOTICA_FAST_CLOCK_SIZE 6
+#endif
+
 // ----------------------------------------------------------------------------
 // Define the LNCV start and end ranges of the different elements, if not
 // specified in any other module.
@@ -24,13 +33,13 @@
   #define DOMOTICA_LNCV_START_INPUT_ADDRESSES DOMOTICA_LNCV_END_OUTPUT_BRIGHTNESS
 #endif
 #ifndef DOMOTICA_LNCV_END_INPUT_ADDRESSES
-  #define DOMOTICA_LNCV_END_INPUT_ADDRESSES (DOMOTICA_START_INPUT_ADDRESSES + 5 * DOMOTICA_RX_INPUT_ADDRESS_SIZE)
+  #define DOMOTICA_LNCV_END_INPUT_ADDRESSES (DOMOTICA_LNCV_START_INPUT_ADDRESSES + 5 * DOMOTICA_RX_INPUT_ADDRESS_SIZE)
 #endif
 #ifndef DOMOTICA_LNCV_START_FAST_CLOCK
-  #define DOMOTICA_LNCV_START_FAST_CLOCK DOMOTICA_END_INPUT_ADDRESSES
+  #define DOMOTICA_LNCV_START_FAST_CLOCK DOMOTICA_LNCV_END_INPUT_ADDRESSES
 #endif
 #ifndef DOMOTICA_LNCV_END_FAST_CLOCK
-  #define DOMOTICA_LNCV_END_FAST_CLOCK (DOMOTICA_START_FAST_CLOCK + 3 * DOMOTICA_FAST_CLOCK_SIZE)
+  #define DOMOTICA_LNCV_END_FAST_CLOCK (DOMOTICA_LNCV_START_FAST_CLOCK + 3 * DOMOTICA_FAST_CLOCK_SIZE)
 #endif
 
 // ----------------------------------------------------------------------------
