@@ -35,6 +35,7 @@ extern void domotica_rx_init(void);
 #include <stdint.h>
 #include <stdlib.h>
 #include "domotica.h"
+#include "loconet/loconet.h"
 #include "loconet/loconet_cv.h"
 #include "loconet/loconet_rx.h"
 
