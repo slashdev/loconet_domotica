@@ -23,6 +23,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "domotica.h"
+#include "loconet/loconet.h"
 #include "loconet/loconet_cv.h"
 #include "loconet/loconet_rx.h"
 
@@ -41,5 +42,10 @@ void domotica_rx_remove_input_address(uint8_t lncv);
 // ------------------------------------------------------------------
 // Listen to sensor messages sent by other devices
 extern void loconet_rx_input_rep(uint8_t, uint8_t);
+
+// ------------------------------------------------------------------
+// Listen to switch requests
+extern void loconet_rx_sw_req(uint8_t, uint8_t);
+
 
 #endif // _DOMOTICA_RX_H_
