@@ -39,7 +39,7 @@
 
 #include "components/fast_clock.h"
 #include "domotica/domotica.h"
-#include "domotica/domotica_rx.h"
+// #include "domotica/domotica_rx.h"
 
 //-----------------------------------------------------------------------------
 HAL_GPIO_PIN(LED, A, 12);
@@ -107,6 +107,36 @@ void domotica_handle_output_change(uint16_t mask_on, uint16_t mask_off)
 {
   (void) mask_on;
   (void) mask_off;
+}
+
+// ----------------------------------------------------------------------------
+void loconet_cv_written_event(uint16_t lncv_number, uint16_t value);
+void loconet_cv_written_event(uint16_t lncv_number, uint16_t value)
+{
+  if (lncv_number == 0)
+  {
+    loconet_config.bit.ADDRESS = value;
+  }
+  else if (lncv_number == 2)
+  {
+    loconet_config.bit.PRIORITY = value;
+  }
+  else if (lncv_number == 3)
+  {
+    // Fast clock setting
+  }
+  else if (lncv_number >= 14 && lncv_number < 30)
+  {
+    // Output light settings
+  }
+  else if (lncv_number >= 30 && lncv_number < 56 && lncv_number % 5 == 0 )
+  {
+    // Update the address in the B2 address array
+  }
+  else if (lncv_number >= 60 && lncv_number < 240)
+  {
+    // Update the Fast clock points
+  }
 }
 
 //-----------------------------------------------------------------------------
