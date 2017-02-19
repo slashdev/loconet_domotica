@@ -25,16 +25,16 @@ void loconet_cv_written_event(uint16_t lncv_number, uint16_t value)
   {
     // Fast clock setting
   }
-  else if (lncv_number >= DOMOTICA_LNCV_START_OUTPUT_BRIGHTNESS && lncv_number < DOMOTICA_LNCV_END_OUTPUT_BRIGHTNESS)
+  else if (lncv_number >= DOMOTICA_LNCV_OUTPUT_BRIGHTNESS_START && lncv_number < DOMOTICA_LNCV_OUTPUT_BRIGHTNESS_END)
   {
     // Output light settings
   }
   // TODO: Refactor the % 5 = 0 to % 5 = DOMOTICA_INPUT_ADDRESS_Mask
-  else if (lncv_number >= DOMOTICA_LNCV_START_INPUT_ADDRESSES && lncv_number < DOMOTICA_LNCV_END_INPUT_ADDRESSES)
+  else if (lncv_number >= DOMOTICA_LNCV_INPUT_ADDRESSES_START && lncv_number < DOMOTICA_LNCV_INPUT_ADDRESSES_END)
   {
     // Update the address in the B2 address array
   }
-  else if (lncv_number >= DOMOTICA_LNCV_START_FAST_CLOCK && lncv_number < DOMOTICA_LNCV_END_FAST_CLOCK)
+  else if (lncv_number >= DOMOTICA_LNCV_FAST_CLOCK_START && lncv_number < DOMOTICA_LNCV_FAST_CLOCK_END)
   {
     // Update the Fast clock points
   }
@@ -56,16 +56,16 @@ uint8_t loconet_cv_write_allowed(uint16_t lncv_number, uint16_t value)
     // Fast clock setting
     return (value < 3) ? LOCONET_CV_ACK_OK : LOCONET_CV_ACK_ERROR_OUTOFRANGE;
   }
-  else if (lncv_number >= DOMOTICA_LNCV_START_OUTPUT_BRIGHTNESS && lncv_number < DOMOTICA_LNCV_END_OUTPUT_BRIGHTNESS)
+  else if (lncv_number >= DOMOTICA_LNCV_OUTPUT_BRIGHTNESS_START && lncv_number < DOMOTICA_LNCV_OUTPUT_BRIGHTNESS_END)
   {
     // Output light settings
     return (value <= 0xFF) ? LOCONET_CV_ACK_OK : LOCONET_CV_ACK_ERROR_OUTOFRANGE;
   }
-  else if (lncv_number >= DOMOTICA_LNCV_START_INPUT_ADDRESSES && lncv_number < DOMOTICA_LNCV_END_INPUT_ADDRESSES)
+  else if (lncv_number >= DOMOTICA_LNCV_INPUT_ADDRESSES_START && lncv_number < DOMOTICA_LNCV_INPUT_ADDRESSES_END)
   {
     return LOCONET_CV_ACK_OK;
   }
-  else if (lncv_number >= DOMOTICA_LNCV_START_FAST_CLOCK && lncv_number < DOMOTICA_LNCV_END_FAST_CLOCK)
+  else if (lncv_number >= DOMOTICA_LNCV_FAST_CLOCK_START && lncv_number < DOMOTICA_LNCV_FAST_CLOCK_END)
   {
     return LOCONET_CV_ACK_OK;
   }
