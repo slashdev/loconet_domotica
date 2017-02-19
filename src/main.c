@@ -106,11 +106,11 @@ static void eeprom_init(void)
   enum status_code error_code = eeprom_emulator_init();
 
   // Fusebits for memory are not set, or too low.
-  // We need at least 3 pages, so set to 1024
+  // We need 4+2 pages, so set to
   if (error_code == STATUS_ERR_NO_MEMORY) {
     struct nvm_fusebits fusebits;
     nvm_get_fuses(&fusebits);
-    fusebits.eeprom_size = NVM_EEPROM_EMULATOR_SIZE_1024;
+    fusebits.eeprom_size = NVM_EEPROM_EMULATOR_SIZE_2048;
     nvm_set_fuses(&fusebits);
     hard_reset();
   } else if (error_code != STATUS_OK) {
