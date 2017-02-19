@@ -18,14 +18,14 @@ typedef struct {
   uint16_t lncv;
 } TIMESTAMP_Type;
 
-TIMESTAMP_Type timestamps[60];
+TIMESTAMP_Type timestamps[DOMOTICA_FAST_CLOCK_SIZE];
 
 // ----------------------------------------------------------------------------
 void domotica_fastclock_set(uint16_t lncv, uint16_t timestamp)
 {
   uint8_t new_index = 0;
 
-  for(uint8_t index = 0 ; index < 60 ; index++)
+  for(uint8_t index = 0 ; index < DOMOTICA_FAST_CLOCK_SIZE ; index++)
   {
     if (timestamps[index].lncv == lncv)
     {
@@ -47,7 +47,7 @@ void domotica_fastclock_set(uint16_t lncv, uint16_t timestamp)
 // ----------------------------------------------------------------------------
 void domotica_fastclock_remove(uint16_t lncv)
 {
-  for(uint8_t index = 0 ; index < 60 ; index++)
+  for(uint8_t index = 0 ; index < DOMOTICA_FAST_CLOCK_SIZE ; index++)
   {
     if (timestamps[index].lncv == lncv)
     {
@@ -81,7 +81,7 @@ void fast_clock_handle_update(FAST_CLOCK_TIME_Type time){
   // Calculate the current time stamp
   uint16_t current_time = time.hour * 100 + time.minute;
 
-  for(uint8_t index = 0 ; index < 60 ; index++)
+  for(uint8_t index = 0 ; index < DOMOTICA_FAST_CLOCK_SIZE ; index++)
   {
     // If last_timestamp is smaller than the current_time, we just check
     // whether the timestamp is in interval (last_timestamp, current_timestamp]
