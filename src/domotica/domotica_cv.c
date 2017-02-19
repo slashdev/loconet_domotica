@@ -43,7 +43,32 @@ void loconet_cv_written_event(uint16_t lncv_number, uint16_t value)
 // ----------------------------------------------------------------------------
 uint8_t loconet_cv_write_allowed(uint16_t lncv_number, uint16_t value)
 {
-  (void)lncv_number;
-  (void)value;
-  return LOCONET_CV_ACK_OK;
+  if (lncv_number == 0)
+  {
+    return (value > 0) ? LOCONET_CV_ACK_OK : LOCONET_CV_ACK_ERROR_OUTOFRANGE;
+  }
+  else if (lncv_number == 2)
+  {
+    return (value > 0 && value <= 0x0F) ? LOCONET_CV_ACK_OK : LOCONET_CV_ACK_ERROR_OUTOFRANGE;
+  }
+  else if (lncv_number == 3)
+  {
+    // Fast clock setting
+    return (value < 3) ? LOCONET_CV_ACK_OK : LOCONET_CV_ACK_ERROR_OUTOFRANGE;
+  }
+  else if (lncv_number >= DOMOTICA_LNCV_START_OUTPUT_BRIGHTNESS && lncv_number < DOMOTICA_LNCV_END_OUTPUT_BRIGHTNESS)
+  {
+    // Output light settings
+    return (value <= 0xFF) ? LOCONET_CV_ACK_OK : LOCONET_CV_ACK_ERROR_OUTOFRANGE;
+  }
+  else if (lncv_number >= DOMOTICA_LNCV_START_INPUT_ADDRESSES && lncv_number < DOMOTICA_LNCV_END_INPUT_ADDRESSES)
+  {
+    return LOCONET_CV_ACK_OK;
+  }
+  else if (lncv_number >= DOMOTICA_LNCV_START_FAST_CLOCK && lncv_number < DOMOTICA_LNCV_END_FAST_CLOCK)
+  {
+    return LOCONET_CV_ACK_OK;
+  }
+
+  return LOCONET_CV_ACK_ERROR_INVALID_VALUE;
 }
