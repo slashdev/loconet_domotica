@@ -11,11 +11,13 @@
 #ifndef _DOMOTICA_FASTCLOCK_H_
 #define _DOMOTICA_FASTCLOCK_H_
 
+#include <stdbool.h>
 #include <stdint.h>
 #include "components/fast_clock.h"
 #include "loconet/loconet_cv.h"
 #include "domotica.h"
 
+void domotica_fastclock_enable(bool);
 
 // ----------------------------------------------------------------------------
 // This function reacts on the fast clock updates. Everytime, it checks whether

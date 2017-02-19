@@ -22,7 +22,21 @@ TIMESTAMP_Type timestamps[60];
 static uint16_t last_timestamp = 2400;
 
 // ----------------------------------------------------------------------------
+bool is_enabled = true;
+
+// ----------------------------------------------------------------------------
+void domotica_fastclock_enable(bool enabled)
+{
+  is_enabled = enabled;
+}
+
+// ----------------------------------------------------------------------------
 void fast_clock_handle_update(FAST_CLOCK_TIME_Type time){
+  // If the fast clock is not enabled, do not use it
+  if (!is_enabled) {
+    return;
+  }
+
   // Calculate the current time stamp
   uint16_t current_time = time.hour * 100 + time.minute;
 
