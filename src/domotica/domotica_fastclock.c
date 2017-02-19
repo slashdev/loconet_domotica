@@ -11,8 +11,49 @@
 #include "domotica_fastclock.h"
 
 // ----------------------------------------------------------------------------
-// This function reacts on the fast clock updates. Everytime, it checks whether
-// the time passed equals a time stamp in the fast clock handle array
+typedef struct {
+  uint16_t timestamp;
+  uint8_t lncv;
+} TIMESTAMP_Type;
+
+TIMESTAMP_Type timestamps[60];
+
+// ----------------------------------------------------------------------------
+static uint16_t last_timestamp = 2400;
+
+// ----------------------------------------------------------------------------
 void fast_clock_handle_update(FAST_CLOCK_TIME_Type time){
-  (void) time;
+  // Calculate the current time stamp
+  uint16_t current_time = time.hour * 100 + time.minute;
+
+  for(uint8_t index = 0 ; index < 60 ; index++)
+  {
+    // If last_timestamp is smaller than the current_time, we just check
+    // whether the timestamp is in interval (last_timestamp, current_timestamp]
+    // Otherwise, i.e., last_timestamp is bigger than current_time, then we
+    // need to check whether the timestamp is in (last_timestamp, 2400) or
+    // in [0, current_timestamp]. Hence the huge if condition.
+    if (
+          (   last_timestamp < current_time
+           && timestamps[index].timestamp > last_timestamp
+           && timestamps[index].timestamp <= current_time
+          )
+          ||
+          (   last_timestamp > current_time
+           && (   (   timestamps[index].timestamp > last_timestamp
+                   && timestamps[index].timestamp < 2359
+                  )
+               || timestamps[index].timestamp <= current_time
+              )
+          )
+       )
+    {
+      domotica_enqueue_output_change(
+        loconet_cv_get(timestamps[index].lncv + 1),
+        loconet_cv_get(timestamps[index].lncv + 2)
+      );
+    }
+  }
+  // Set the last_timestamp to the current time.
+  last_timestamp = current_time;
 }
