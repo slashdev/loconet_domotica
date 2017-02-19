@@ -36,9 +36,9 @@ void loconet_cv_written_event(uint16_t lncv_number, uint16_t value)
       // Update the address in the B2 address array
     }
   }
-  else if (lncv_number >= DOMOTICA_LNCV_FAST_CLOCK_START && lncv_number < DOMOTICA_LNCV_FAST_CLOCK_END)
+  else if (lncv_number >= DOMOTICA_LNCV_FASTCLOCK_START && lncv_number < DOMOTICA_LNCV_FASTCLOCK_END)
   {
-    if (lncv_number % 3 == DOMOTICA_LNCV_FAST_CLOCK_POS_TIME)
+    if (lncv_number % 3 == DOMOTICA_LNCV_FASTCLOCK_POS_TIME)
     {
       // Update the time in the FAST_CLOCK array
     }
@@ -70,7 +70,7 @@ uint8_t loconet_cv_write_allowed(uint16_t lncv_number, uint16_t value)
   {
     return LOCONET_CV_ACK_OK;
   }
-  else if (lncv_number >= DOMOTICA_LNCV_FAST_CLOCK_START && lncv_number < DOMOTICA_LNCV_FAST_CLOCK_END)
+  else if (lncv_number >= DOMOTICA_LNCV_FASTCLOCK_START && lncv_number < DOMOTICA_LNCV_FASTCLOCK_END)
   {
     return LOCONET_CV_ACK_OK;
   }
