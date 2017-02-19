@@ -13,6 +13,7 @@
 
 #include "domotica.h"
 
+// TODO: Add variables to domotica_rx.h and domotica_fastclock.h, respectively.
 #ifndef DOMOTICA_RX_INPUT_ADDRESS_SIZE
   #define DOMOTICA_RX_INPUT_ADDRESS_SIZE 6
 #endif
