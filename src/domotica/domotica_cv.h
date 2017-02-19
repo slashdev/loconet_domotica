@@ -42,8 +42,14 @@
   #define DOMOTICA_LNCV_FAST_CLOCK_END (DOMOTICA_LNCV_FAST_CLOCK_START + 3 * DOMOTICA_FAST_CLOCK_SIZE)
 #endif
 
+#ifndef _DOMOTICA_CV_H_
+#define _DOMOTICA_CV_H_
+
+
 // ----------------------------------------------------------------------------
 void loconet_cv_written_event(uint16_t lncv_number, uint16_t value);
 
 // ----------------------------------------------------------------------------
 uint8_t loconet_cv_write_allowed(uint16_t, uint16_t);
+
+#endif
