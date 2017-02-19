@@ -11,12 +11,53 @@
 #include "domotica_fastclock.h"
 
 // ----------------------------------------------------------------------------
+// Array of timestamps to react on. If the LNCV number in the array equals 0,
+// it is an empty slot.
 typedef struct {
   uint16_t timestamp;
-  uint8_t lncv;
+  uint16_t lncv;
 } TIMESTAMP_Type;
 
 TIMESTAMP_Type timestamps[60];
+
+// ----------------------------------------------------------------------------
+void domotica_fastclock_set(uint16_t lncv, uint16_t timestamp)
+{
+  uint8_t new_index = 0;
+
+  for(uint8_t index = 0 ; index < 60 ; index++)
+  {
+    if (timestamps[index].lncv == lncv)
+    {
+      timestamps[index].timestamp = timestamp;
+      return;
+    }
+    // Keep track of an empty spot
+    if (timestamps[index].lncv == 0) {
+      new_index = index;
+    }
+  }
+
+  // We did not return, hence we could not set the lncv. So, we create a new
+  // entry on new_index
+  timestamps[new_index].timestamp = timestamp;
+  timestamps[new_index].lncv = lncv;
+}
+
+// ----------------------------------------------------------------------------
+void domotica_fastclock_remove(uint16_t lncv)
+{
+  for(uint8_t index = 0 ; index < 60 ; index++)
+  {
+    if (timestamps[index].lncv == lncv)
+    {
+      timestamps[index].lncv = 0;
+      timestamps[index].timestamp = 0xFF;
+
+      return;
+    }
+  }
+}
 
 // ----------------------------------------------------------------------------
 static uint16_t last_timestamp = 2400;

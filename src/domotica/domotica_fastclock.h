@@ -17,7 +17,17 @@
 #include "loconet/loconet_cv.h"
 #include "domotica.h"
 
-void domotica_fastclock_enable(bool);
+// ----------------------------------------------------------------------------
+// Sets the LNCV address to timestamp in the FAST_CLOCK react list.
+void domotica_fastclock_set(uint16_t lncv, uint16_t timestamp);
+
+// ----------------------------------------------------------------------------
+// Removes the LNCV address from the FAST_CLOCK react list.
+void domotica_fastclock_remove(uint16_t lncv);
+
+// ----------------------------------------------------------------------------
+// If enable is true, then the FAST_CLOCK react list is enabled.
+void domotica_fastclock_enable(bool enable);
 
 // ----------------------------------------------------------------------------
 // This function reacts on the fast clock updates. Everytime, it checks whether
