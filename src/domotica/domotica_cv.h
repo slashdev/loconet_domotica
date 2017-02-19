@@ -17,7 +17,7 @@
   #define DOMOTICA_RX_INPUT_ADDRESS_SIZE 6
 #endif
 #ifndef DOMOTICA_FAST_CLOCK_SIZE
-  #define DOMOTICA_FAST_CLOCK_SIZE 6
+  #define DOMOTICA_FAST_CLOCK_SIZE 60
 #endif
 
 // ----------------------------------------------------------------------------
