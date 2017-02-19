@@ -7,3 +7,12 @@
  *
  * @author Jan Martijn van der Werf
  */
+
+#include "domotica_fastclock.h"
+
+// ----------------------------------------------------------------------------
+// This function reacts on the fast clock updates. Everytime, it checks whether
+// the time passed equals a time stamp in the fast clock handle array
+void fast_clock_handle_update(FAST_CLOCK_TIME_Type time){
+  (void) time;
+}

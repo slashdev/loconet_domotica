@@ -11,4 +11,9 @@
 #ifndef _DOMOTICA_FASTCLOCK_H_
 #define _DOMOTICA_FASTCLOCK_H_
 
+#include <stdint.h>
+#include "components/fast_clock.h"
+
+void fast_clock_handle_update(FAST_CLOCK_TIME_Type time);
+
 #endif
