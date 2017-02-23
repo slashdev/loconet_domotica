@@ -38,8 +38,6 @@ static OUTPUT_CHANGE_RINGBUFFER_Type buffer = { { { 0, 0} }, 0, 0};
 // ------------------------------------------------------------------
 void domotica_enqueue_output_change(uint16_t mask_on, uint16_t mask_off)
 {
-  (void) mask_on;
-  (void) mask_off;
   uint8_t index = (buffer.writer + 1) % DOMOTICA_CHANGE_BUFFER_Size;
 
   // If the buffer is full, wait until the reader empties
