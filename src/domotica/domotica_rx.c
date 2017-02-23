@@ -132,7 +132,7 @@ void loconet_rx_sw_req(uint8_t sw1, uint8_t sw2)
   for(uint8_t index = 0 ; index < 16 ; index++) {
     if (address == loconet_config.bit.ADDRESS + index)
     {
-      if (state == true)
+      if (state)
       {
         // Switch output "index" on!
         domotica_enqueue_output_change((1 << index), 0);
