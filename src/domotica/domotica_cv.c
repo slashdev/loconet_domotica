@@ -28,6 +28,10 @@ void loconet_cv_written_event(uint16_t lncv_number, uint16_t value)
   else if (lncv_number >= DOMOTICA_LNCV_OUTPUT_BRIGHTNESS_START && lncv_number < DOMOTICA_LNCV_OUTPUT_BRIGHTNESS_END)
   {
     // Output light settings
+    if (value <= 0xFF)
+    {
+      domotica_set_output_brightness(lncv_number - DOMOTICA_LNCV_OUTPUT_BRIGHTNESS_START, (uint8_t) value);
+    }
   }
   else if (lncv_number >= DOMOTICA_LNCV_INPUT_ADDRESSES_START && lncv_number < DOMOTICA_LNCV_INPUT_ADDRESSES_END)
   {
@@ -77,4 +81,26 @@ uint8_t loconet_cv_write_allowed(uint16_t lncv_number, uint16_t value)
   }
 
   return LOCONET_CV_ACK_ERROR_INVALID_VALUE;
+}
+
+// ----------------------------------------------------------------------------
+// Initializes all CV values
+void domotica_cv_init(void)
+{
+  // Initialize FAST_CLOCK
+  for(uint8_t lncv_number = DOMOTICA_LNCV_FASTCLOCK_START ; lncv_number < DOMOTICA_LNCV_FASTCLOCK_START ; lncv_number += 3)
+  {
+    // TODO: Set fast clock values
+  }
+
+  // Initialize B2 addresses
+  for(uint8_t lncv_number = DOMOTICA_LNCV_INPUT_ADDRESSES_START ; lncv_number < DOMOTICA_LNCV_INPUT_ADDRESSES_END ; lncv_number += 5)
+  {
+    domotica_rx_set_input_address(lncv_number, loconet_cv_get(lncv_number));
+  }
+  // Initialize brightness outputs
+  for(uint8_t index = 0 ; index < DOMOTICA_OUTPUT_SIZE ; index++)
+  {
+    domotica_set_output_brightness(index, (uint8_t) loconet_cv_get(DOMOTICA_LNCV_OUTPUT_BRIGHTNESS_START + index));
+  }
 }

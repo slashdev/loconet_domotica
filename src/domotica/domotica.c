@@ -78,12 +78,7 @@ void domotica_loop(void)
 void domotica_init(void)
 {
   domotica_rx_init();
-}
-
-// ------------------------------------------------------------------
-void domotica_init(void)
-{
-  domotica_rx_init();
+  domotica_cv_init();
 }
 
 // ------------------------------------------------------------------

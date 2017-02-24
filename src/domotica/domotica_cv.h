@@ -67,4 +67,8 @@ void loconet_cv_written_event(uint16_t lncv_number, uint16_t value);
 // ----------------------------------------------------------------------------
 uint8_t loconet_cv_write_allowed(uint16_t, uint16_t);
 
+// ----------------------------------------------------------------------------
+// Initializes all cv numbers
+void domotica_cv_init(void);
+
 #endif

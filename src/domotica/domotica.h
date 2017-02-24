@@ -29,6 +29,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include "domotica_cv.h"
 #include "domotica_rx.h"
 
 // ------------------------------------------------------------------
