@@ -27,21 +27,6 @@
 // ------------------------------------------------------------------
 // Initialize the RX library
 extern void domotica_rx_init(void);
-#ifndef _DOMOTICA_RX_H_
-#define _DOMOTICA_RX_H_
-
-
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include "domotica.h"
-#include "loconet/loconet.h"
-#include "loconet/loconet_cv.h"
-#include "loconet/loconet_rx.h"
-
-// ------------------------------------------------------------------
-// Initialize the RX library
-extern void domotica_rx_init(void);
 
 // ------------------------------------------------------------------
 // Add a B2 address to listen to.
