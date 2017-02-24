@@ -22,48 +22,58 @@ __attribute__ ((weak, alias ("domotica_handle_output_change_dummy"))) \
 
 // ------------------------------------------------------------------
 // Internal structure of a queue to maintain all changes that should be handled
-typedef struct OUTPUT_CHANGE {
+typedef struct {
   uint16_t mask_on;
   uint16_t mask_off;
-  struct OUTPUT_CHANGE *next;
-} OUTPUT_CHANGE_Type;
+} DOMOTICA_OUTPUT_CHANGE_Type;
 
-static OUTPUT_CHANGE_Type *output_change_queue = 0;
+typedef struct {
+  DOMOTICA_OUTPUT_CHANGE_Type buffer[DOMOTICA_CHANGE_BUFFER_Size];
+  volatile uint8_t writer;
+  volatile uint8_t reader;
+} DOMOTICA_OUTPUT_CHANGE_RINGBUFFER_Type;
+
+static DOMOTICA_OUTPUT_CHANGE_RINGBUFFER_Type buffer = { { { 0, 0} }, 0, 0};
 
 // ------------------------------------------------------------------
 void domotica_enqueue_output_change(uint16_t mask_on, uint16_t mask_off)
 {
-  OUTPUT_CHANGE_Type *change = malloc(sizeof(OUTPUT_CHANGE_Type));
-  change->mask_on = mask_on;
-  change->mask_off = mask_off;
+  uint8_t index = (buffer.writer + 1) % DOMOTICA_CHANGE_BUFFER_Size;
 
-  if (!output_change_queue)
-  {
-    output_change_queue = change;
-  }
-  else
-  {
-    // Add change add the end of the queue
-    OUTPUT_CHANGE_Type *curr = output_change_queue;
-    for(; curr; curr = curr->next);
-    curr->next = change;
+  // If the buffer is full, wait until the reader empties
+  // a slot in the buffer to write to.
+  while (index == buffer.reader) {
+    continue;
   }
 
+  // Write the byte
+  buffer.buffer[buffer.writer].mask_on = mask_on;
+  buffer.buffer[buffer.writer].mask_off = mask_off;
+
+  // Update the writer
+  buffer.writer = index;
 }
 
 // ------------------------------------------------------------------
 void domotica_loop(void)
 {
-  if (output_change_queue)
-  {
-    // Handle the mask change
-    domotica_handle_output_change(output_change_queue->mask_on, output_change_queue->mask_off);
+  uint8_t reader = buffer.reader;
+  uint8_t writer = buffer.writer;
 
-    // Pop the first element from the queue.
-    OUTPUT_CHANGE_Type *curr = output_change_queue;
-    output_change_queue = output_change_queue->next;
-    free(curr);
+  if (writer == reader) {
+    return;
   }
+  // The indexes are not equal, so the writer is ahead!
+  // As we do not need to know anything about sizes, we can just read the
+  // current message and advance...
+  domotica_handle_output_change(buffer.buffer[reader].mask_on, buffer.buffer[reader].mask_off);
+  buffer.reader = (reader + 1) % DOMOTICA_CHANGE_BUFFER_Size;
+}
+
+// ------------------------------------------------------------------
+void domotica_init(void)
+{
+  domotica_rx_init();
 }
 
 // ------------------------------------------------------------------

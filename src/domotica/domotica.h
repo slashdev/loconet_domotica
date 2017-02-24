@@ -16,6 +16,10 @@
  * @author Jan Martijn van der Werf
  */
 
+#ifndef DOMOTICA_CHANGE_BUFFER_Size
+  #define DOMOTICA_CHANGE_BUFFER_Size 32
+#endif
+
 #ifndef _DOMOTICA_H_
 #define _DOMOTICA_H_
 
