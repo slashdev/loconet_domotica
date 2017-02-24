@@ -136,6 +136,10 @@ int main(void)
   // Initialize domotica
   domotica_init();
 
+  // Set up the fast clock
+  fast_clock_init();
+  fast_clock_set_slave();
+
   while (1) {
     loconet_loop();
     fast_clock_loop();
