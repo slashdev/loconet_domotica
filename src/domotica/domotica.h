@@ -48,4 +48,13 @@ extern void domotica_enqueue_output_change(uint16_t mask_on, uint16_t mask_off);
 // enqueued, this function pops the first, and handles it.
 extern void domotica_loop(void);
 
+// ------------------------------------------------------------------
+// Sets the output to a certain brightness
+void domotica_set_output_brightness(uint8_t output, uint8_t value);
+
+// ------------------------------------------------------------------
+// Gets the brightness of an output
+uint8_t domotica_get_output_brightness(uint8_t output);
+
+
 #endif // _DOMOTICA_H_
