@@ -25,15 +25,15 @@ __attribute__ ((weak, alias ("domotica_handle_output_change_dummy"))) \
 typedef struct {
   uint16_t mask_on;
   uint16_t mask_off;
-} OUTPUT_CHANGE_Type;
+} DOMOTICA_OUTPUT_CHANGE_Type;
 
 typedef struct {
-  OUTPUT_CHANGE_Type buffer[DOMOTICA_CHANGE_BUFFER_Size];
+  DOMOTICA_OUTPUT_CHANGE_Type buffer[DOMOTICA_CHANGE_BUFFER_Size];
   volatile uint8_t writer;
   volatile uint8_t reader;
-} OUTPUT_CHANGE_RINGBUFFER_Type;
+} DOMOTICA_OUTPUT_CHANGE_RINGBUFFER_Type;
 
-static OUTPUT_CHANGE_RINGBUFFER_Type buffer = { { { 0, 0} }, 0, 0};
+static DOMOTICA_OUTPUT_CHANGE_RINGBUFFER_Type buffer = { { { 0, 0} }, 0, 0};
 
 // ------------------------------------------------------------------
 void domotica_enqueue_output_change(uint16_t mask_on, uint16_t mask_off)
