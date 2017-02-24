@@ -125,6 +125,9 @@ int main(void)
   // Initialize loconet
   loconet_init();
 
+  // Initialize domotica
+  domotica_init();
+
   while (1) {
     loconet_loop();
 
