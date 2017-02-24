@@ -87,13 +87,16 @@ uint8_t loconet_cv_write_allowed(uint16_t lncv_number, uint16_t value)
 // Initializes all CV values
 void domotica_cv_init(void)
 {
-  // Initialize FAST_CLOCK
+  // Initialize the FAST_CLOCK module
+
+  // Initialize the FAST_CLOCK timestamps
   for(uint8_t lncv_number = DOMOTICA_LNCV_FASTCLOCK_START ; lncv_number < DOMOTICA_LNCV_FASTCLOCK_START ; lncv_number += 3)
   {
     // TODO: Set fast clock values
   }
 
   // Initialize B2 addresses
+  // TODO: Change this into a uint16_t lncv_number
   for(uint8_t lncv_number = DOMOTICA_LNCV_INPUT_ADDRESSES_START ; lncv_number < DOMOTICA_LNCV_INPUT_ADDRESSES_END ; lncv_number += 5)
   {
     domotica_rx_set_input_address(lncv_number, loconet_cv_get(lncv_number));

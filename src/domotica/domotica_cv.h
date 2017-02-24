@@ -9,7 +9,7 @@
  */
 
 #include <stdint.h>
-#include "loconet/loconet.h"
+#include "loconet/loconet_cv.h"
 
 #include "domotica.h"
 
