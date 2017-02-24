@@ -34,6 +34,7 @@ void loconet_cv_written_event(uint16_t lncv_number, uint16_t value)
     if (lncv_number % 5 == DOMOTICA_LNCV_INPUT_ADDRESS_POS_ADDRESS)
     {
       // Update the address in the B2 address array
+      domotica_rx_set_input_address(lncv_number, value);
     }
   }
   else if (lncv_number >= DOMOTICA_LNCV_FASTCLOCK_START && lncv_number < DOMOTICA_LNCV_FASTCLOCK_END)
