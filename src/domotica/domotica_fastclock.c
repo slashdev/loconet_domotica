@@ -96,7 +96,7 @@ void fast_clock_handle_update(FAST_CLOCK_TIME_Type time){
           ||
           (   last_timestamp > current_time
            && (   (   timestamps[index].timestamp > last_timestamp
-                   && timestamps[index].timestamp < 2359
+                   && timestamps[index].timestamp < 2400
                   )
                || timestamps[index].timestamp <= current_time
               )
