@@ -13,6 +13,8 @@
 // ----------------------------------------------------------------------------
 // Array of timestamps to react on. If the LNCV number in the array equals 0,
 // it is an empty slot.
+// Timestamp is an int representing the local time in the hhmm format.
+// E.g. 12:34 is represented as 1234.
 typedef struct {
   uint16_t timestamp;
   uint16_t lncv;
