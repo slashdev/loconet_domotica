@@ -25,11 +25,11 @@ extern void domotica_rx_init(void);
 
 // ------------------------------------------------------------------
 // Add a B2 address to listen to.
-extern void domotica_rx_set_input_address(uint8_t lncv, uint16_t address);
+extern void domotica_rx_set_input_address(uint16_t lncv, uint16_t address);
 
 // ------------------------------------------------------------------
 // Remove a B2 address to listen to.
-void domotica_rx_remove_input_address(uint8_t lncv);
+void domotica_rx_remove_input_address(uint16_t lncv);
 
 // ------------------------------------------------------------------
 // Listen to sensor messages sent by other devices
