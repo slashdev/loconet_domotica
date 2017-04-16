@@ -46,6 +46,7 @@ void loconet_cv_written_event(uint16_t lncv_number, uint16_t value)
     if (lncv_number % 3 == DOMOTICA_LNCV_FASTCLOCK_POS_TIME)
     {
       // Update the time in the FAST_CLOCK array
+      domotica_fastclock_set(lncv_number, value);
     }
   }
 }
@@ -92,7 +93,7 @@ void domotica_cv_init(void)
   // Initialize the FAST_CLOCK timestamps
   for(uint8_t lncv_number = DOMOTICA_LNCV_FASTCLOCK_START ; lncv_number < DOMOTICA_LNCV_FASTCLOCK_START ; lncv_number += 3)
   {
-    // TODO: Set fast clock values
+    domotica_fastclock_set(lncv_number, loconet_cv_get(lncv_number));
   }
 
   // Initialize B2 addresses
