@@ -9,11 +9,6 @@
  */
 
 // ------------------------------------------------------------------
-
-#ifndef DOMOTICA_RX_INPUT_ADDRESS_SIZE
-  #define DOMOTICA_RX_INPUT_ADDRESS_SIZE 6
-#endif
-
 #ifndef _DOMOTICA_RX_H_
 #define _DOMOTICA_RX_H_
 

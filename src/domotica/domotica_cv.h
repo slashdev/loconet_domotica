@@ -12,36 +12,8 @@
 #include "loconet/loconet_cv.h"
 
 #include "domotica.h"
-
-// TODO: Add variables to domotica_rx.h and domotica_fastclock.h, respectively.
-#ifndef DOMOTICA_RX_INPUT_ADDRESS_SIZE
-  #define DOMOTICA_RX_INPUT_ADDRESS_SIZE 6
-#endif
-#ifndef DOMOTICA_FASTCLOCK_SIZE
-  #define DOMOTICA_FASTCLOCK_SIZE 60
-#endif
-
-// ----------------------------------------------------------------------------
-// Define the LNCV start and end ranges of the different elements, if not
-// specified in any other module.
-#ifndef DOMOTICA_LNCV_OUTPUT_BRIGHTNESS_START
-  #define DOMOTICA_LNCV_OUTPUT_BRIGHTNESS_START 14
-#endif
-#ifndef DOMOTICA_LNCV_OUTPUT_BRIGHTNESS_END
-  #define DOMOTICA_LNCV_OUTPUT_BRIGHTNESS_END (DOMOTICA_LNCV_OUTPUT_BRIGHTNESS_START + DOMOTICA_OUTPUT_SIZE)
-#endif
-#ifndef DOMOTICA_LNCV_INPUT_ADDRESSES_START
-  #define DOMOTICA_LNCV_INPUT_ADDRESSES_START DOMOTICA_LNCV_OUTPUT_BRIGHTNESS_END
-#endif
-#ifndef DOMOTICA_LNCV_INPUT_ADDRESSES_END
-  #define DOMOTICA_LNCV_INPUT_ADDRESSES_END (DOMOTICA_LNCV_INPUT_ADDRESSES_START + 5 * DOMOTICA_RX_INPUT_ADDRESS_SIZE)
-#endif
-#ifndef DOMOTICA_LNCV_FASTCLOCK_START
-  #define DOMOTICA_LNCV_FASTCLOCK_START DOMOTICA_LNCV_INPUT_ADDRESSES_END
-#endif
-#ifndef DOMOTICA_LNCV_FASTCLOCK_END
-  #define DOMOTICA_LNCV_FASTCLOCK_END (DOMOTICA_LNCV_FASTCLOCK_START + 3 * DOMOTICA_FASTCLOCK_SIZE)
-#endif
+#include "domotica_rx.h"
+#include "domotica_fastclock.h"
 
 #ifndef _DOMOTICA_CV_H_
 #define _DOMOTICA_CV_H_

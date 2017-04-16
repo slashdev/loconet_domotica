@@ -60,7 +60,7 @@
 
 #include "domotica/domotica.h"
 #include "domotica/domotica_cv.h"
-// #include "domotica/domotica_rx.h"
+#include "domotica/domotica_rx.h"
 
 //-----------------------------------------------------------------------------
 HAL_GPIO_PIN(LED, A, 12);
