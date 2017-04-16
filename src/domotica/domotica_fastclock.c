@@ -85,25 +85,26 @@ void fast_clock_handle_update(FAST_CLOCK_TIME_Type time){
 
   for(uint8_t index = 0 ; index < DOMOTICA_FASTCLOCK_SIZE ; index++)
   {
-    // If last_timestamp is smaller than the current_time, we just check
-    // whether the timestamp is in interval (last_timestamp, current_timestamp]
-    // Otherwise, i.e., last_timestamp is bigger than current_time, then we
-    // need to check whether the timestamp is in (last_timestamp, 2400) or
-    // in [0, current_timestamp]. Hence the huge if condition.
-    if (
-          (   last_timestamp < current_time
-           && timestamps[index].timestamp > last_timestamp
-           && timestamps[index].timestamp <= current_time
-          )
-          ||
-          (   last_timestamp > current_time
-           && (   (   timestamps[index].timestamp > last_timestamp
-                   && timestamps[index].timestamp < 2400
-                  )
-               || timestamps[index].timestamp <= current_time
-              )
-          )
-       )
+    if (timestamps[index].timestamp >= 2400)
+    {
+      continue;
+    }
+
+    if( // The default option: in the interval [ last_timestamp, current_time ]
+        (   last_timestamp < timestamps[index].timestamp
+         && timestamps[index].timestamp <= current_time
+        )
+        || // the rare case that last_timstamp > current_time. Then, it should
+           // be in either two intervals: [last_time, 2400]
+           // or in [0, current_time]
+           (    current_time < last_timestamp
+             &&
+             (   timestamps[index].timestamp > last_timestamp
+              || timestamps[index].timestamp <= current_time
+             )
+           )
+
+      )
     {
       domotica_enqueue_output_change(
         loconet_cv_get(timestamps[index].lncv + 1),
