@@ -94,7 +94,7 @@ void fast_clock_handle_update(FAST_CLOCK_TIME_Type time){
         (   last_timestamp < timestamps[index].timestamp
          && timestamps[index].timestamp <= current_time
         )
-        || // the rare case that last_timstamp > current_time. Then, it should
+        || // the rare case that last_timestamp > current_time. Then, it should
            // be in either two intervals: [last_time, 2400]
            // or in [0, current_time]
            (    current_time < last_timestamp
