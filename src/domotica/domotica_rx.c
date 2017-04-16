@@ -60,7 +60,6 @@ static uint16_t extract_address(uint8_t byte1, uint8_t byte2, bool is4kaddress)
 
   // Multiply by two
   address <<= 1;
-
   if (is4kaddress)
   {
     // We always need to add 1 to the address, and 2 if its odd

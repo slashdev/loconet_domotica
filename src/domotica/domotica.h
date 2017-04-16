@@ -14,6 +14,10 @@
  *     domotica_loop();
  *
  * @author Jan Martijn van der Werf
+ *
+ * Timestamps
+ * To represent timestamps, we use a hhmm notation stored in an int16. For
+ * example timestamp 12:34 is internally represented as the int 1234.
  */
 
 #ifndef DOMOTICA_CHANGE_BUFFER_Size

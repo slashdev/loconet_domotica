@@ -37,6 +37,7 @@
 #include "loconet/loconet_cv.h"
 #include "utils/eeprom.h"
 
+#include "components/fast_clock.h"
 #include "domotica/domotica.h"
 #include "domotica/domotica_rx.h"
 
@@ -46,6 +47,9 @@ HAL_GPIO_PIN(LED, A, 12);
 // TODO: Change according to actual values. For now I use them in the same
 // setting as Ferdi has them.
 LOCONET_BUILD(2/*sercom*/, A/*tx_port*/, 14/*tx_pin*/, A/*rx_port*/, 15/*rx_pin*/, 3/*rx_pad*/, A/*fl_port*/, 13/*fl_pin*/, 13/*fl_int*/, 1/*fl_tmr*/);
+
+// Initialize the FAST CLOCK, set it to use Timer 2.
+FAST_CLOCK_BUILD(2)
 
 //-----------------------------------------------------------------------------
 void irq_handler_eic(void);
@@ -125,12 +129,16 @@ int main(void)
   // Initialize loconet
   loconet_init();
 
+  // Set up the fast clock
+  fast_clock_init();
+  fast_clock_set_slave();
+
   // Initialize domotica
   domotica_init();
 
   while (1) {
     loconet_loop();
-
+    fast_clock_loop();
     domotica_loop();
   }
   return 0;
