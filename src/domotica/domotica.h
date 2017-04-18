@@ -32,7 +32,6 @@
 #include "domotica_cv.h"
 #include "domotica_rx.h"
 
-
 // ----------------------------------------------------------------------------
 #ifndef DOMOTICA_OUTPUT_SIZE
   #define DOMOTICA_OUTPUT_SIZE 16
@@ -50,7 +49,6 @@
 // Initialize domotica
 extern void domotica_init(void);
 
-
 // ------------------------------------------------------------------
 // Enqueue an output change so that it eventually will be processed
 extern void domotica_enqueue_output_change(uint16_t mask_on, uint16_t mask_off);
@@ -67,6 +65,5 @@ void domotica_set_output_brightness(uint8_t output, uint8_t value);
 // ------------------------------------------------------------------
 // Gets the brightness of an output
 uint8_t domotica_get_output_brightness(uint8_t output);
-
 
 #endif // _DOMOTICA_H_

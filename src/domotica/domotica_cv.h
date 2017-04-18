@@ -28,7 +28,6 @@
 #define DOMOTICA_LNCV_FASTCLOCK_START DOMOTICA_LNCV_INPUT_ADDRESSES_END
 #define DOMOTICA_LNCV_FASTCLOCK_END (DOMOTICA_LNCV_FASTCLOCK_START + 3 * DOMOTICA_FASTCLOCK_SIZE)
 
-
 // ----------------------------------------------------------------------------
 // The different LNCV numbers used in the modulo calculation to decide
 // what function the LNCV number has in the input address range.
