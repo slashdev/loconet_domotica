@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include "domotica_cv.h"
 #include "domotica_rx.h"
+#include "outputhandler/outputhandler.h"
 
 // ----------------------------------------------------------------------------
 #ifndef DOMOTICA_OUTPUT_SIZE
