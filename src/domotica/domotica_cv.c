@@ -13,15 +13,7 @@
 // ----------------------------------------------------------------------------
 void loconet_cv_written_event(uint16_t lncv_number, uint16_t value)
 {
-  if (lncv_number == 0)
-  {
-    loconet_config.bit.ADDRESS = value;
-  }
-  else if (lncv_number == 2)
-  {
-    loconet_config.bit.PRIORITY = value;
-  }
-  else if (lncv_number == 3)
+  if (lncv_number == 3)
   {
     // Fast clock setting
   }
