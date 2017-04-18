@@ -19,6 +19,17 @@
 #define _DOMOTICA_CV_H_
 
 // ----------------------------------------------------------------------------
+// Define the LNCV start and end ranges of the different elements, if not
+// specified in any other module.
+#define DOMOTICA_LNCV_OUTPUT_BRIGHTNESS_START 14
+#define DOMOTICA_LNCV_OUTPUT_BRIGHTNESS_END (DOMOTICA_LNCV_OUTPUT_BRIGHTNESS_START + DOMOTICA_OUTPUT_SIZE)
+#define DOMOTICA_LNCV_INPUT_ADDRESSES_START DOMOTICA_LNCV_OUTPUT_BRIGHTNESS_END
+#define DOMOTICA_LNCV_INPUT_ADDRESSES_END (DOMOTICA_LNCV_INPUT_ADDRESSES_START + 5 * DOMOTICA_RX_INPUT_ADDRESS_SIZE)
+#define DOMOTICA_LNCV_FASTCLOCK_START DOMOTICA_LNCV_INPUT_ADDRESSES_END
+#define DOMOTICA_LNCV_FASTCLOCK_END (DOMOTICA_LNCV_FASTCLOCK_START + 3 * DOMOTICA_FASTCLOCK_SIZE)
+
+
+// ----------------------------------------------------------------------------
 // The different LNCV numbers used in the modulo calculation to decide
 // what function the LNCV number has in the input address range.
 #define DOMOTICA_LNCV_INPUT_ADDRESS_POS_ADDRESS (DOMOTICA_LNCV_INPUT_ADDRESSES_START % 5)
