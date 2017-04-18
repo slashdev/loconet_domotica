@@ -45,6 +45,10 @@
   #define DOMOTICA_FASTCLOCK_SIZE 60
 #endif
 
+#ifndef DOMOTICA_OUTPUT_MAX_BRIGHTNESS
+  #define DOMOTICA_OUTPUT_MAX_BRIGHTNESS 255
+#endif
+
 // ------------------------------------------------------------------
 // Initialize domotica
 extern void domotica_init(void);

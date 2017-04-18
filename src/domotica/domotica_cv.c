@@ -62,7 +62,7 @@ uint8_t loconet_cv_write_allowed(uint16_t lncv_number, uint16_t value)
   else if (lncv_number >= DOMOTICA_LNCV_OUTPUT_BRIGHTNESS_START && lncv_number < DOMOTICA_LNCV_OUTPUT_BRIGHTNESS_END)
   {
     // Output light settings
-    return (value <= 0xFF) ? LOCONET_CV_ACK_OK : LOCONET_CV_ACK_ERROR_OUTOFRANGE;
+    return (value <= DOMOTICA_OUTPUT_MAX_BRIGHTNESS) ? LOCONET_CV_ACK_OK : LOCONET_CV_ACK_ERROR_OUTOFRANGE;
   }
   else if (lncv_number >= DOMOTICA_LNCV_INPUT_ADDRESSES_START && lncv_number < DOMOTICA_LNCV_INPUT_ADDRESSES_END)
   {
