@@ -30,12 +30,6 @@
 // We need 240 CV values
 // #define LOCONET_CV_NUMBERS 240
 
-#define DOMOTICA_RX_INPUT_ADDRESS_SIZE 6
-#define DOMOTICA_FAST_CLOCK_SIZE 60
-
-// Start number for the Output LNCV number
-#define DOMOTICA_LNCV_START_OUTPUT_BRIGHTNESS 14
-
 // All includes
 #include <stdlib.h>
 #include <stdint.h>
@@ -48,15 +42,6 @@
 #include "utils/eeprom.h"
 
 #include "components/fast_clock.h"
-
-// We need 240 CV values
-// #define LOCONET_CV_NUMBERS 240
-
-#define DOMOTICA_RX_INPUT_ADDRESS_SIZE 6
-#define DOMOTICA_FAST_CLOCK_SIZE 60
-
-// Start number for the Output
-#define DOMOTICA_LNCV_START_OUTPUT_BRIGHTNESS 14
 
 #include "domotica/domotica.h"
 #include "domotica/domotica_cv.h"
