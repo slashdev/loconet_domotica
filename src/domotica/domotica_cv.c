@@ -20,10 +20,7 @@ void loconet_cv_written_event(uint16_t lncv_number, uint16_t value)
   else if (lncv_number >= DOMOTICA_LNCV_OUTPUT_BRIGHTNESS_START && lncv_number < DOMOTICA_LNCV_OUTPUT_BRIGHTNESS_END)
   {
     // Output light settings
-    if (value <= 0xFF)
-    {
-      domotica_set_output_brightness(lncv_number - DOMOTICA_LNCV_OUTPUT_BRIGHTNESS_START, (uint8_t) value);
-    }
+    domotica_set_output_brightness(lncv_number - DOMOTICA_LNCV_OUTPUT_BRIGHTNESS_START, (uint8_t) value);
   }
   else if (lncv_number >= DOMOTICA_LNCV_INPUT_ADDRESSES_START && lncv_number < DOMOTICA_LNCV_INPUT_ADDRESSES_END)
   {
