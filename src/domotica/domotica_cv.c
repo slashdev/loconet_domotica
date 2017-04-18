@@ -81,8 +81,7 @@ void domotica_cv_init(void)
   }
 
   // Initialize B2 addresses
-  // TODO: Change this into a uint16_t lncv_number
-  for(uint8_t lncv_number = DOMOTICA_LNCV_INPUT_ADDRESSES_START ; lncv_number < DOMOTICA_LNCV_INPUT_ADDRESSES_END ; lncv_number += 5)
+  for(uint16_t lncv_number = DOMOTICA_LNCV_INPUT_ADDRESSES_START ; lncv_number < DOMOTICA_LNCV_INPUT_ADDRESSES_END ; lncv_number += 5)
   {
     domotica_rx_set_input_address(lncv_number, loconet_cv_get(lncv_number));
   }
