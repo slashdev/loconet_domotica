@@ -84,15 +84,16 @@ void domotica_handle_output_change(uint16_t mask_on, uint16_t mask_off)
   outputhandler_switch_state_post_event(state);
 }
 
+// ----------------------------------------------------------------------------
+uint16_t outputhandler_get_state(void)
+{
+  return state;
+}
+
 void outputhandler_set_output_state_dummy(uint8_t output, uint8_t brightness)
 {
   (void) output;
   (void) brightness;
-}
-
-uint16_t outputhandler_get_state(void)
-{
-  return state;
 }
 
 void outputhandler_switch_state_event_dummy(uint16_t state);
