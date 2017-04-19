@@ -13,12 +13,22 @@
 // ------------------------------------------------------------------
 // Prototypes
 void outputhandler_set_output_state_dummy(uint8_t output, uint8_t brightness);
+void outputhandler_switch_state_event_dummy(uint16_t state);
 
 // ----------------------------------------------------------------------------
 // This prototype is used for setting the actual output to the given brightness
 __attribute__ ((weak, alias ("outputhandler_set_output_state_dummy"))) \
   void outputhandler_set_output_state(uint8_t output, uint8_t brightness);
 
+// This is a dummy for the switch-state-pre event, which is raised before the
+// state starts to be changed by a change event.
+__attribute__ ((weak, alias ("outputhandler_switch_state_event_dummy"))) \
+  void outputhandler_switch_state_pre_event(uint16_t state);
+
+// This is a dummy for the switch-state-post event, which is raised after the
+// state has been changed by a change event.
+__attribute__ ((weak, alias ("outputhandler_switch_state_event_dummy"))) \
+  void outputhandler_switch_state_post_event(uint16_t state);
 
 // ----------------------------------------------------------------------------
 // Maintains the current state of the system
@@ -39,6 +49,9 @@ void outputhandler_set_output_brightness(uint8_t output, uint8_t brightness)
 
 void domotica_handle_output_change(uint16_t mask_on, uint16_t mask_off)
 {
+  // Send the pre event that we are about to change the state.
+  outputhandler_switch_state_pre_event(state);
+
   // first we check the mask for switching off outputs
   // We take the complement of the state, i.e., it is a 1 if the output is
   // switched off, and 0 if it is switched on. Then we compare with mask_off to
@@ -66,6 +79,9 @@ void domotica_handle_output_change(uint16_t mask_on, uint16_t mask_off)
       state |= (1 << index);
     }
   }
+
+  // Send the post event that we are finished changing the state.
+  outputhandler_switch_state_post_event(state);
 }
 
 void outputhandler_set_output_state_dummy(uint8_t output, uint8_t brightness)
@@ -77,4 +93,9 @@ void outputhandler_set_output_state_dummy(uint8_t output, uint8_t brightness)
 uint16_t outputhandler_get_state(void)
 {
   return state;
+}
+
+void outputhandler_switch_state_event_dummy(uint16_t state);
+{
+  (void) state;
 }
