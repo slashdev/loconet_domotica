@@ -61,10 +61,25 @@ FAST_CLOCK_BUILD(2)
 
 // ----------------------------------------------------------------------------
 // Sets the output to brightness level `brightness`
-outputhandler_set_output_state(uint8_t output, uint8_t brightness)
+void outputhandler_set_output_state(uint8_t output, uint8_t brightness);
+void outputhandler_set_output_state(uint8_t output, uint8_t brightness)
 {
   (void) output;
   (void) brightness;
+}
+
+// ----------------------------------------------------------------------------
+void outputhandler_switch_state_pre_event(uint16_t state);
+void outputhandler_switch_state_pre_event(uint16_t state)
+{
+  (void) state;
+}
+
+// ----------------------------------------------------------------------------
+void outputhandler_switch_state_post_event(uint16_t state);
+void outputhandler_switch_state_post_event(uint16_t state)
+{
+  (void) state;
 }
 
 //----------------------------------------------------------------------------
