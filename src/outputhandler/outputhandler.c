@@ -93,12 +93,14 @@ uint16_t outputhandler_get_state(void)
   return state;
 }
 
+// ----------------------------------------------------------------------------
 void outputhandler_set_output_state_dummy(uint8_t output, uint8_t brightness)
 {
   (void) output;
   (void) brightness;
 }
 
+// ----------------------------------------------------------------------------
 void outputhandler_switch_state_event_dummy(uint16_t state);
 {
   (void) state;
