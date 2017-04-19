@@ -47,10 +47,13 @@ void outputhandler_set_output_brightness(uint8_t output, uint8_t brightness)
   }
 }
 
+// ----------------------------------------------------------------------------
 void domotica_handle_output_change(uint16_t mask_on, uint16_t mask_off)
 {
   // Send the pre event that we are about to change the state.
   outputhandler_switch_state_pre_event(state);
+
+  uint8_t index;
 
   // first we check the mask for switching off outputs
   // We take the complement of the state, i.e., it is a 1 if the output is
@@ -58,7 +61,7 @@ void domotica_handle_output_change(uint16_t mask_on, uint16_t mask_off)
   // see whether the mask differs from the state. If so, we check whether we
   // should do something (& mask_off)
   uint16_t delta = ((~state) ^ mask_off) & mask_off;
-  uint8_t index;
+
   for(index = 0 ; index < DOMOTICA_OUTPUT_SIZE ; index++)
   {
     if(delta & (1 << index))
