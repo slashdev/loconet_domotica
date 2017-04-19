@@ -1,0 +1,15 @@
+
+#include <stdio.h>
+#include "outputhandler.h"
+
+int main(void)
+{
+  printf("Current state: %d\n", outputhandler_get_state());
+  domotica_handle_output_change(0xFFFF, 0);
+  printf("I expect the state to be: %d\n", 65535);
+  printf("Current state           : %d\n", outputhandler_get_state());
+  // switch off numbers 0, 2, 4, 6, 8, 10, 12 and 14
+  domotica_handle_output_change(0, 21845);
+  printf("I expect the state to be: %d\n", 43690);
+  printf("Current state           : %d\n", outputhandler_get_state());
+}

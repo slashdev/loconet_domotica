@@ -90,20 +90,5 @@ void domotica_handle_output_change_dummy(uint16_t mask_on, uint16_t mask_off)
 
 void domotica_set_output_brightness(uint8_t output, uint8_t value)
 {
-  if (output < DOMOTICA_OUTPUT_SIZE)
-  {
-    domotica_output_brightness[output] = value;
-  }
-}
-
-uint8_t domotica_get_output_brightness(uint8_t output)
-{
-  if (output < DOMOTICA_OUTPUT_SIZE)
-  {
-    return domotica_output_brightness[output];
-  }
-  else
-  {
-    return 0;
-  }
+  outputhandler_set_output_brightness(output, value);
 }

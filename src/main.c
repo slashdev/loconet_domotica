@@ -41,6 +41,8 @@
 #include "loconet/loconet_cv.h"
 #include "utils/eeprom.h"
 
+#include "outputhandler/outputhandler.h"
+
 #include "components/fast_clock.h"
 
 #include "domotica/domotica.h"
@@ -57,7 +59,30 @@ LOCONET_BUILD(2/*sercom*/, A/*tx_port*/, 14/*tx_pin*/, A/*rx_port*/, 15/*rx_pin*
 // Initialize the FAST CLOCK, set it to use Timer 2.
 FAST_CLOCK_BUILD(2)
 
-//-----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// Sets the output to brightness level `brightness`
+void outputhandler_set_output_state(uint8_t output, uint8_t brightness);
+void outputhandler_set_output_state(uint8_t output, uint8_t brightness)
+{
+  (void) output;
+  (void) brightness;
+}
+
+// ----------------------------------------------------------------------------
+void outputhandler_switch_state_pre_event(uint16_t state);
+void outputhandler_switch_state_pre_event(uint16_t state)
+{
+  (void) state;
+}
+
+// ----------------------------------------------------------------------------
+void outputhandler_switch_state_post_event(uint16_t state);
+void outputhandler_switch_state_post_event(uint16_t state)
+{
+  (void) state;
+}
+
+//----------------------------------------------------------------------------
 void irq_handler_eic(void);
 void irq_handler_eic(void) {
   if (loconet_handle_eic()) {
@@ -103,16 +128,6 @@ static void eeprom_init(void)
     eeprom_emulator_erase_memory();
     hard_reset();
   }
-}
-
-//-----------------------------------------------------------------------------
-// This function implements the actual output change, determined by the
-// domotica controllers.
-void domotica_handle_output_change(uint16_t mask_on, uint16_t mask_off);
-void domotica_handle_output_change(uint16_t mask_on, uint16_t mask_off)
-{
-  (void) mask_on;
-  (void) mask_off;
 }
 
 //-----------------------------------------------------------------------------
