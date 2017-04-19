@@ -8,10 +8,6 @@
  * @author Jan Martijn van der Werf
  */
 
-#ifndef DOMOTICA_FASTCLOCK_SIZE
-  #define DOMOTICA_FASTCLOCK_SIZE 60
-#endif
-
 #ifndef _DOMOTICA_FASTCLOCK_H_
 #define _DOMOTICA_FASTCLOCK_H_
 

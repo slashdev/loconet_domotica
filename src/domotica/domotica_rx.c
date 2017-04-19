@@ -12,7 +12,7 @@
 
 // ------------------------------------------------------------------
 typedef struct {
-  uint8_t lncv;
+  uint16_t lncv;
   uint16_t address;
 } INPUT_ADDRESS_Type;
 
@@ -26,7 +26,7 @@ void domotica_rx_init(void)
 // ------------------------------------------------------------------
 // Adds a sensor device to the list of elements to listen to.
 // lncv is used to be able to refer to the corresponding masks
-void domotica_rx_set_input_address(uint8_t lncv, uint16_t address)
+void domotica_rx_set_input_address(uint16_t lncv, uint16_t address)
 {
   uint8_t index = 0;
   for(; index < DOMOTICA_RX_INPUT_ADDRESS_SIZE && b2_addresses[index].address > 0 ; index++ );
@@ -40,7 +40,7 @@ void domotica_rx_set_input_address(uint8_t lncv, uint16_t address)
 
 // ------------------------------------------------------------------
 // Removes the input address that belongs to the given lncv number
-void domotica_rx_remove_input_address(uint8_t lncv)
+void domotica_rx_remove_input_address(uint16_t lncv)
 {
   uint8_t index = 0;
   for(; index < DOMOTICA_RX_INPUT_ADDRESS_SIZE && b2_addresses[index].lncv != lncv ; index++);
